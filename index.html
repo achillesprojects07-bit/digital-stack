@@ -14,11 +14,11 @@
     <header class="hero">
       <div class="topline">
         <span class="brand-dot"></span>
-        <span class="version">V1.0</span>
+        <span class="version">V1.4</span>
       </div>
       <p class="eyebrow">Aging Powerfully</p>
       <h1>Content Compass</h1>
-      <p class="subtitle">Tell me where you are. I’ll write the story, then build the scenes.</p>
+      <p class="subtitle">Tell me where you are, your mood, and your target length. I’ll write the story first, then build a non-redundant video and photo checklist around it.</p>
     </header>
 
     <main>
@@ -44,7 +44,7 @@
           <div class="dash-card">
             <span class="dash-label">Output</span>
             <strong>One TikTok story</strong>
-            <p>Plus photo list and CapCut plan.</p>
+            <p>With target-market fit check, video checklist, photo list, and simple edit plan.</p>
           </div>
         </div>
       </section>
@@ -73,6 +73,7 @@
               Mood for today
               <select id="mood" name="mood">
                 <option>Quiet</option>
+                <option>Poetic</option>
                 <option>Witty</option>
                 <option>Observant</option>
                 <option>Elegant</option>
@@ -110,25 +111,62 @@
             </label>
 
             <label>
+              Target video length
+              <input id="videoLength" name="videoLength" type="number" min="15" max="90" step="5" value="45" inputmode="numeric" />
+              <small class="field-note">Enter any length from 15–90 seconds. Example: 15, 30, 45, 60.</small>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
               Can someone film you once?
               <select id="filmedOnce" name="filmedOnce">
                 <option>No</option>
                 <option>Yes</option>
               </select>
             </label>
+
+            <label>
+              Target audience focus
+              <select id="audienceFocus" name="audienceFocus">
+                <option value="filipina45" selected>Filipino women 45–65</option>
+                <option value="daughters">Daughters who send this to their mothers</option>
+                <option value="midlife-global">Women in midlife globally</option>
+                <option value="travel-soul">Soulful mature travelers</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Content pillar
+              <select id="pillar" name="pillar">
+                <option value="auto">Auto-suggest</option>
+                <option>The Woman</option>
+                <option>Ordinary Greece</option>
+                <option>Sea & Stillness</option>
+                <option>Food</option>
+                <option>Small Things</option>
+                <option>On the Road</option>
+              </select>
+            </label>
+
+            <label>
+              Story angle
+              <select id="angle" name="angle">
+                <option value="auto">Auto-suggest</option>
+                <option value="soulful">Soulful observation</option>
+                <option value="memory">Memory and meaning</option>
+                <option value="quiet-power">Quiet confidence</option>
+                <option value="details">Beauty in small details</option>
+                <option value="simple-day">A simple day, deeply felt</option>
+              </select>
+            </label>
           </div>
 
           <label>
-            Content pillar
-            <select id="pillar" name="pillar">
-              <option value="auto">Auto-suggest</option>
-              <option>The Woman</option>
-              <option>Ordinary Greece</option>
-              <option>Sea & Stillness</option>
-              <option>Food</option>
-              <option>Small Things</option>
-              <option>On the Road</option>
-            </select>
+            What should the app avoid today?
+            <input id="avoid" name="avoid" type="text" placeholder="e.g., no jokes, no food metaphors, no private people, no dramatic tone" />
           </label>
 
           <div class="button-row sticky-actions">
@@ -146,6 +184,8 @@
             <h2>Your daily content plan</h2>
           </div>
           <div class="button-row compact">
+            <button class="ghost-btn" id="tryAgainBtn" type="button">Try another version</button>
+            <button class="ghost-btn" id="softerBtn" type="button">Make it more soulful</button>
             <button class="ghost-btn" id="copyPlanBtn" type="button">Copy all</button>
             <button class="ghost-btn" id="savePlanBtn" type="button">Save plan</button>
           </div>
@@ -161,6 +201,18 @@
             <h2 id="archive-title">Saved plans</h2>
           </div>
           <button class="ghost-btn" id="clearArchiveBtn" type="button">Clear archive</button>
+        </div>
+        <div class="archive-filters" aria-label="Archive date filters">
+          <label>
+            From
+            <input id="archiveFrom" type="date" />
+          </label>
+          <label>
+            To
+            <input id="archiveTo" type="date" />
+          </label>
+          <button class="ghost-btn" id="filterArchiveBtn" type="button">Filter</button>
+          <button class="ghost-btn" id="clearArchiveFilterBtn" type="button">Clear filter</button>
         </div>
         <div id="archiveList" class="archive-list empty-state">No saved plans yet.</div>
       </section>
