@@ -1,4 +1,4 @@
-# Content Compass V1.6 — Blue Soulful Anywhere Director
+# Content Compass V1.7 — Blue Soulful Anywhere Director
 
 A GitHub Pages PWA for Aileen's social media content planning.
 
@@ -13,12 +13,12 @@ You enter the basic reality of the day: location, activity, mood, energy, time o
 - Generates a script-first TikTok/Reels plan.
 - Builds a non-redundant video checklist with a different purpose for every shot.
 - Creates photo shots, caption, hashtags, thumbnail direction, and simple CapCut instructions.
-- Includes expert revision controls after generation so you can improve a plan instead of starting over.
+- Includes expert call sheet UX after generation so you can improve a plan instead of starting over.
 - Includes date filters in the archive.
 - Saves inputs and plans locally in the browser with localStorage.
 - Works offline after the first successful load through a service worker.
 
-## V1.6 updates
+## V1.7 updates
 
 - Added **Improve this plan** controls after the generated output.
 - Added expert content-director buttons: Stronger hook, Clearer story, More visual, Less talky, More soulful not dramatic, More relatable to women 45+, More elegant, and No face today.
@@ -48,3 +48,10 @@ The woman is the center. The place supports the story.
 - This is GitHub-only V1. Data is saved on the current device only.
 - Firebase sync is intentionally not included yet.
 - When Firebase is added later, saved plans can sync across phone and MacBook.
+
+
+## V1.7 update
+- Reordered the output into a clear call-sheet flow: summary, hook, script, video checklist, photos, easy edit, caption.
+- Moved audience fit and scene map into collapsible sections.
+- Moved revision controls to the bottom so the plan is visible before improvements.
+- Simplified the editing guide for easier CapCut use.

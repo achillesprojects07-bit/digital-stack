@@ -1,7 +1,7 @@
-const VERSION = 'V1.6';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.6';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.6';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.6';
+const VERSION = 'V1.7';
+const STORAGE_INPUTS = 'contentCompass.inputs.v1.7';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.7';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v1.7';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -447,21 +447,19 @@ function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = [], adj
   const profile = timingProfile(target);
   const clipCount = videoChecklist.length || profile.shots;
   const voiceWords = profile.words;
-  const lowRange = Math.max(15, target - 3);
-  const highRange = Math.min(95, target + 3);
   return [
-    `Target length: ${target} seconds. Keep the final edit around ${lowRange}–${highRange} seconds.`,
-    `Use about ${clipCount} video clips. Clip timing: ${profile.dur}. For a ${target}-second video, keep it ${profile.edit}.`,
-    `First 1.5 seconds: show the strongest visual and place this hook as text: “${script.hook}”`,
-    'Edit order: 1) hook visual, 2) human presence, 3) place context, 4) sensory detail, 5) movement, 6) emotional object, 7) quiet pause, 8) soft ending.',
-    `Voiceover: read slowly. For ${target} seconds, keep the spoken script around ${voiceWords} words or less. For 15–20 second videos, use one short thought only.`,
-    'Text overlays: maximum 3 only — hook, one emotional line, final soft landing. Do not cover the whole video with text.',
-    'Sound: soft instrumental or natural ambient sound. Keep music low at 8–12% under the voice. Avoid songs with loud lyrics.',
-    'Cutting rule: if two clips show the same thing, keep only the one with more feeling, movement, or light.',
-    ...(adjustments.includes('more-visual') ? ['Director note: choose clips with movement, layers, and emotion over static pretty shots.'] : []),
-    ...(adjustments.includes('less-talky') ? ['Director note: leave 1–2 seconds of natural sound or silence before the final line.'] : []),
-    ...(adjustments.includes('no-face') ? ['Director note: do not use face footage. Let hands, back view, reflections, and objects carry presence.'] : []),
-    `Thumbnail: use the clearest cover photo with negative space and this short text: “${script.hook}”`,
+    `Set the project to about ${target} seconds.`,
+    `Use ${clipCount} clips. Keep most clips around ${profile.dur}.`,
+    `Start with the strongest visual and add this hook as text: “${script.hook}”`,
+    'Put the clips in this order: place → human presence → sensory detail → movement → quiet ending.',
+    `Record or add the voiceover. Keep it around ${voiceWords} words or less.`,
+    'Use only 1–3 text overlays. Do not cover every clip with words.',
+    'Keep music very low under the voice, around 8–12%. Natural sound is also okay.',
+    'Remove duplicate clips. If two clips show the same thing, keep the one with better light or feeling.',
+    ...(adjustments.includes('more-visual') ? ['Revision note: let the visuals carry more of the story before adding more words.'] : []),
+    ...(adjustments.includes('less-talky') ? ['Revision note: leave one quiet pause before the final line.'] : []),
+    ...(adjustments.includes('no-face') ? ['Revision note: use hands, back view, reflection, shadow, or objects instead of face footage.'] : []),
+    `Thumbnail: use the cleanest cover photo and this short text: “${script.hook}”`,
     `Light note: ${timeNotes[inputs.timeOfDay]}`
   ];
 }
@@ -486,17 +484,116 @@ function generatePlan(rawInputs, options = {}) {
 }
 
 function renderPlan(plan) {
+  const adjustmentText = plan.adjustments?.length ? ` · ${escapeHtml(getAdjustmentLabels(plan.adjustments).join(', '))}` : '';
   PLAN_OUTPUT.innerHTML = `
-    <article class="output-card plan-rules">
-      <p class="kicker">Plan controls</p>
-      <p><strong>Current version:</strong> Revision ${escapeHtml(plan.revisionNumber || 1)} ${plan.adjustments?.length ? '· ' + escapeHtml(getAdjustmentLabels(plan.adjustments).join(', ')) : ''}</p>
-      <p><strong>Not feeling this version?</strong> Use the expert revision controls below. The app will keep your original location, mood, activity, and target length, then improve the story, scenes, shots, photos, and editing brief.</p>
-      <p><strong>Shot rule:</strong> one place shot, one human detail, one texture, one story object, one quiet ending. No repeated coffee/table/door shots unless they serve different moments.</p>
+    <article class="output-card call-sheet-head">
+      <p class="kicker">Call sheet</p>
+      <div class="call-title-row">
+        <div>
+          <h3>Today’s content plan</h3>
+          <p class="call-summary">${escapeHtml(plan.direction)}</p>
+        </div>
+        <span class="revision-badge">Revision ${escapeHtml(plan.revisionNumber || 1)}${adjustmentText}</span>
+      </div>
+      <div class="meta-grid compact-meta">
+        <div class="meta-pill"><span>Location</span><strong>${escapeHtml(plan.inputs.location)}</strong></div>
+        <div class="meta-pill"><span>Mood</span><strong>${escapeHtml(plan.inputs.mood)}</strong></div>
+        <div class="meta-pill"><span>Pillar</span><strong>${escapeHtml(plan.pillar)}</strong></div>
+        <div class="meta-pill"><span>Length</span><strong>${escapeHtml(plan.inputs.videoLength || 45)} sec</strong></div>
+        <div class="meta-pill"><span>Energy</span><strong>${escapeHtml(plan.inputs.energy)}</strong></div>
+      </div>
+      <p class="helper-text"><strong>Shot rule:</strong> one place shot, one human detail, one texture, one story object, one quiet ending. No repeated coffee/table/door shots unless they serve different moments.</p>
     </article>
 
+    <article class="output-card hook-card">
+      <p class="kicker">1 · Hook</p>
+      <p class="big-line">${escapeHtml(plan.script.hook)}</p>
+      <p class="helper-text">Use this as your first text overlay in the first 1.5 seconds.</p>
+    </article>
+
+    <article class="output-card">
+      <p class="kicker">2 · Voiceover script</p>
+      <div class="script-box">${escapeHtml(plan.script.body)}</div>
+      <p><strong>Read direction:</strong> ${escapeHtml(plan.script.moodInstruction)}</p>
+    </article>
+
+    <article class="output-card shoot-card">
+      <p class="kicker">3 · Video checklist</p>
+      <p class="helper-text">Shoot these in order. Each clip has a different job so the video does not become repetitive.</p>
+      <div class="checklist">
+        ${(plan.videoChecklist || []).map((item, index) => `
+          <label class="check-item rich-check" data-check="video-${index}">
+            <input type="checkbox" />
+            <span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.duration)}</strong><br>${escapeHtml(item.shot)}<br><em>${escapeHtml(item.why)}</em></span>
+          </label>`).join('')}
+      </div>
+    </article>
+
+    <article class="output-card">
+      <p class="kicker">4 · Photos to take</p>
+      <p class="helper-text">These support TikTok covers, Stories, carousels, and memory archive.</p>
+      <div class="checklist">
+        ${plan.photoList.map((item, index) => `
+          <label class="check-item" data-check="photo-${index}">
+            <input type="checkbox" />
+            <span>${escapeHtml(item)}</span>
+          </label>`).join('')}
+      </div>
+    </article>
+
+    <article class="output-card edit-card">
+      <p class="kicker">5 · Easy edit</p>
+      <p class="helper-text">Simple CapCut guide. Follow this only after you have the clips.</p>
+      <div class="numbered-guide">
+        ${plan.editBrief.map((item, index) => `
+          <label class="check-item" data-check="edit-${index}">
+            <input type="checkbox" />
+            <span><strong>${index + 1}.</strong> ${escapeHtml(item)}</span>
+          </label>`).join('')}
+      </div>
+    </article>
+
+    <article class="output-card">
+      <p class="kicker">6 · Caption + hashtags</p>
+      <p>${escapeHtml(plan.caption)}</p>
+    </article>
+
+    <details class="output-card collapsible-card">
+      <summary>
+        <span><strong>Audience Fit: Strong</strong> · ${escapeHtml(plan.targetFit?.score || 90)}% appeal target</span>
+        <span class="summary-hint">View checklist</span>
+      </summary>
+      <p><strong>Audience:</strong> ${escapeHtml(plan.targetFit?.audience || 'Filipino women 45–65')}</p>
+      <p>${escapeHtml(plan.targetFit?.reason || '')}</p>
+      <div class="checklist compact-list">
+        ${(plan.targetFit?.checks || []).map((item, index) => `
+          <label class="check-item" data-check="fit-${index}">
+            <input type="checkbox" checked />
+            <span>${escapeHtml(item)}</span>
+          </label>`).join('')}
+      </div>
+    </details>
+
+    <details class="output-card collapsible-card scene-map">
+      <summary>
+        <span><strong>Scene map</strong> · how the story becomes visuals</span>
+        <span class="summary-hint">Open</span>
+      </summary>
+      ${plan.scenes.map(scene => `
+        <div class="scene">
+          <div class="scene-num">${scene.number}</div>
+          <div>
+            <p class="scene-title">${escapeHtml(scene.beat)}</p>
+            <p><strong>Video:</strong> ${escapeHtml(scene.video)}</p>
+            <p><strong>Photo:</strong> ${escapeHtml(scene.photo)}</p>
+          </div>
+        </div>`).join('')}
+    </details>
+
     <article class="output-card revision-tools">
-      <p class="kicker">Improve this plan</p>
-      <p class="revision-note">Choose what feels wrong. These are content-director fixes, not random tone buttons.</p>
+      <p class="kicker">Not feeling this plan?</p>
+      <h3>Improve this plan</h3>
+      <p class="revision-note">Choose what feels wrong after reading the plan. These are content-director fixes, not random tone buttons.</p>
       <div class="adjustment-grid" id="adjustmentGrid">
         <button class="adjustment-chip" type="button" data-adjust="stronger-hook">Stronger hook</button>
         <button class="adjustment-chip" type="button" data-adjust="clearer-story">Clearer story</button>
@@ -510,99 +607,9 @@ function renderPlan(plan) {
       <div class="revision-box">
         <label>
           Your notes for improvement
-          <textarea id="revisionNotes" rows="3" placeholder="e.g., less emotional, more food, no age today, make it 15-sec friendly, use this line..."></textarea>
+          <textarea id="revisionNotes" rows="3" placeholder="e.g., less emotional, stronger food memory, no age today, make it 15-sec friendly, use this line..."></textarea>
         </label>
         <button class="primary-btn" id="revisePlanBtn" type="button">Revise plan</button>
-      </div>
-    </article>
-
-    <article class="output-card highlight">
-      <p class="kicker">Story direction</p>
-      <p class="big-line">${escapeHtml(plan.direction)}</p>
-      <div class="meta-grid">
-        <div class="meta-pill"><span>Location</span><strong>${escapeHtml(plan.inputs.location)}</strong></div>
-        <div class="meta-pill"><span>Mood</span><strong>${escapeHtml(plan.inputs.mood)}</strong></div>
-        <div class="meta-pill"><span>Pillar</span><strong>${escapeHtml(plan.pillar)}</strong></div>
-        <div class="meta-pill"><span>Length</span><strong>${escapeHtml(plan.inputs.videoLength || 45)} sec</strong></div>
-        <div class="meta-pill"><span>Revision</span><strong>${escapeHtml(plan.revisionNumber || 1)}</strong></div>
-        <div class="meta-pill"><span>Energy</span><strong>${escapeHtml(plan.inputs.energy)}</strong></div>
-      </div>
-    </article>
-
-    <article class="output-card target-fit">
-      <p class="kicker">Target-market fit check</p>
-      <p class="fit-score">${escapeHtml(plan.targetFit?.score || 90)}% appeal target</p>
-      <p><strong>Audience:</strong> ${escapeHtml(plan.targetFit?.audience || 'Filipino women 45–65')}</p>
-      <p>${escapeHtml(plan.targetFit?.reason || '')}</p>
-      <div class="checklist compact-list">
-        ${(plan.targetFit?.checks || []).map((item, index) => `
-          <label class="check-item" data-check="fit-${index}">
-            <input type="checkbox" checked />
-            <span>${escapeHtml(item)}</span>
-          </label>`).join('')}
-      </div>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Hook</p>
-      <p class="big-line">${escapeHtml(plan.script.hook)}</p>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Voiceover script</p>
-      <div class="script-box">${escapeHtml(plan.script.body)}</div>
-      <p><strong>Direction:</strong> ${escapeHtml(plan.script.moodInstruction)}</p>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Scene logic</p>
-      ${plan.scenes.map(scene => `
-        <div class="scene">
-          <div class="scene-num">${scene.number}</div>
-          <div>
-            <p class="scene-title">${escapeHtml(scene.beat)}</p>
-            <p><strong>Story purpose:</strong> ${escapeHtml(scene.video)}</p>
-            <p><strong>Photo support:</strong> ${escapeHtml(scene.photo)}</p>
-          </div>
-        </div>`).join('')}
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Must-shoot video checklist</p>
-      <p class="helper-text">Shoot these in order. Each clip has a different job, so the video does not become repetitive.</p>
-      <div class="checklist">
-        ${(plan.videoChecklist || []).map((item, index) => `
-          <label class="check-item rich-check" data-check="video-${index}">
-            <input type="checkbox" />
-            <span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.duration)}</strong><br>${escapeHtml(item.shot)}<br><em>${escapeHtml(item.why)}</em></span>
-          </label>`).join('')}
-      </div>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Must-take photos</p>
-      <div class="checklist">
-        ${plan.photoList.map((item, index) => `
-          <label class="check-item" data-check="photo-${index}">
-            <input type="checkbox" />
-            <span>${escapeHtml(item)}</span>
-          </label>`).join('')}
-      </div>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">Caption + hashtags</p>
-      <p>${escapeHtml(plan.caption)}</p>
-    </article>
-
-    <article class="output-card">
-      <p class="kicker">CapCut editing brief</p>
-      <div class="checklist">
-        ${plan.editBrief.map((item, index) => `
-          <label class="check-item" data-check="edit-${index}">
-            <input type="checkbox" />
-            <span>${escapeHtml(item)}</span>
-          </label>`).join('')}
       </div>
     </article>
   `;

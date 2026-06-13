@@ -153,3 +153,23 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent); box-shadow:0
 .revision-badge{display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:var(--soft); border:1px solid var(--line); color:var(--accent); font-weight:900; font-size:.82rem}
 @media(max-width:900px){.adjustment-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.adjustment-grid{grid-template-columns:1fr}.adjustment-chip{width:100%}}
+
+/* V1.7 Call Sheet UX */
+.call-sheet-head{background:linear-gradient(135deg,#fbfdff,#eef6ff)}
+.call-title-row{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap}
+.call-title-row h3{font-size:1.25rem; margin:0 0 6px}
+.call-summary{margin:0; color:var(--muted); max-width:760px}
+.compact-meta{grid-template-columns:repeat(5,1fr)}
+.hook-card{border-color:rgba(31,102,209,.35); box-shadow:0 10px 24px rgba(31,102,209,.08)}
+.shoot-card{background:linear-gradient(135deg,#fbfdff,#f5faff)}
+.edit-card .numbered-guide{display:grid; gap:10px}
+.collapsible-card{padding:0; overflow:hidden}
+.collapsible-card summary{list-style:none; cursor:pointer; padding:18px; display:flex; justify-content:space-between; gap:14px; align-items:center}
+.collapsible-card summary::-webkit-details-marker{display:none}
+.collapsible-card[open] summary{border-bottom:1px solid var(--line); background:#f7fbff}
+.collapsible-card > p,.collapsible-card > .checklist,.collapsible-card > .scene{margin-left:18px; margin-right:18px}
+.collapsible-card > .checklist{margin-bottom:18px}
+.summary-hint{font-size:.82rem; color:var(--accent); font-weight:900; white-space:nowrap}
+.scene-map .scene{margin:0 18px}
+.revision-tools h3{margin:0 0 4px; font-size:1.2rem}
+@media(max-width:760px){.compact-meta{grid-template-columns:1fr}.collapsible-card summary{align-items:flex-start}.summary-hint{white-space:normal}}
