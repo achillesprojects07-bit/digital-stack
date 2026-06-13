@@ -1,4 +1,5 @@
-const CACHE_NAME = 'content-compass-v1-9';
+// UPDATE THIS STRING with every new deploy to force cache refresh for existing users.
+const CACHE_NAME = 'content-compass-v2-0';
 const ASSETS = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));

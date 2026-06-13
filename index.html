@@ -14,11 +14,11 @@
     <header class="hero">
       <div class="topline">
         <span class="brand-dot"></span>
-        <span class="version">V1.9</span>
+        <span class="version">V2.0</span>
       </div>
       <p class="eyebrow">Aging Powerfully</p>
       <h1>Content Compass</h1>
-      <p class="subtitle">Tell me where you are, what you feel, and how much video or photo you want today. I’ll turn it into a script, shot list, photo list, and edit timeline.</p>
+      <p class="subtitle">Tell me where you are, what you’re doing, your mood, and your video/photo balance. I’ll build the story, shot list, and edit timeline for the day.</p>
     </header>
 
     <main>
@@ -30,7 +30,7 @@
           </div>
           <button class="ghost-btn" id="loadSampleBtn" type="button">Sample day</button>
         </div>
-        <p class="intro-line">Tell me where you are, what you’re doing, your mood, and your video/photo balance. I’ll build the story first, then the shots in the right order.</p>
+        <p class="intro-line">Tell me where you are, what you’re doing, and how you feel today. I’ll turn it into a script, shot list, photo list, and edit timeline.</p>
       </section>
 
       <section class="panel" aria-labelledby="input-title">
@@ -39,6 +39,24 @@
             <p class="eyebrow small">Input</p>
             <h2 id="input-title">What chapter are you editing today?</h2>
           </div>
+        </div>
+
+        <div class="mode-row" aria-label="Input mode">
+          <button class="mode-btn active" id="quickModeBtn" type="button">Quick · 3 fields</button>
+          <button class="mode-btn" id="fullModeBtn" type="button">Full · all options</button>
+        </div>
+
+        <div class="preset-wrap">
+          <p class="preset-label">Quick fill recurring days</p>
+          <div class="preset-row" id="presetRow">
+            <button type="button" class="preset-pill" data-preset="lu-morning">La Union · beach morning</button>
+            <button type="button" class="preset-pill" data-preset="lu-golden">La Union · golden hour</button>
+            <button type="button" class="preset-pill" data-preset="manila-day">Manila · ordinary day</button>
+            <button type="button" class="preset-pill" data-preset="clinic-day">Ortigas · clinic day</button>
+            <button type="button" class="preset-pill" data-preset="coffee-walk">Neighborhood · coffee walk</button>
+            <button type="button" class="preset-pill" data-preset="transit">On the road · transit</button>
+          </div>
+          <p class="field-note" id="presetStatus">Choose one only if it fits today. Greece stays manual: type the exact area.</p>
         </div>
 
         <form id="directorForm" class="director-form">
@@ -52,7 +70,7 @@
             <textarea id="activity" name="activity" rows="3" placeholder="e.g., coffee, walk, market, lunch, beach, journaling, drive" required></textarea>
           </label>
 
-          <div class="form-grid">
+          <div class="form-grid quick-visible">
             <label>
               Mood for today
               <select id="mood" name="mood">
@@ -71,7 +89,7 @@
               </select>
             </label>
 
-            <label>
+            <label class="advanced-field">
               Energy level
               <select id="energy" name="energy">
                 <option>Low</option>
@@ -82,7 +100,7 @@
           </div>
 
           <div class="form-grid">
-            <label>
+            <label class="advanced-field">
               Time of day
               <select id="timeOfDay" name="timeOfDay">
                 <option>Morning</option>
@@ -98,6 +116,7 @@
               Target video length
               <input id="videoLength" name="videoLength" type="number" min="15" max="90" step="5" value="45" inputmode="numeric" />
               <small class="field-note">For video or mixed plans. Enter 15–90 seconds.</small>
+              <small id="videoLengthFeedback" class="field-feedback valid">✓ Valid length</small>
             </label>
           </div>
 
@@ -115,7 +134,7 @@
             </label>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid advanced-field">
             <label>
               Can someone film you once?
               <select id="filmedOnce" name="filmedOnce">
@@ -135,7 +154,7 @@
             </label>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid advanced-field">
             <label>
               Content pillar
               <select id="pillar" name="pillar">
@@ -162,7 +181,7 @@
             </label>
           </div>
 
-          <label>
+          <label class="advanced-field">
             What should the app avoid today?
             <input id="avoid" name="avoid" type="text" placeholder="e.g., no jokes, no food metaphors, no private people, no dramatic tone" />
           </label>
@@ -183,7 +202,9 @@
           </div>
           <div class="button-row compact">
             <button class="ghost-btn" id="tryAgainBtn" type="button">Try another version</button>
+            <button class="ghost-btn" id="shootOnlyBtn" type="button">Shoot checklist only</button>
             <button class="ghost-btn" id="copyPlanBtn" type="button">Copy all</button>
+            <button class="ghost-btn" id="sharePlanBtn" type="button">Send to Notes</button>
             <button class="ghost-btn" id="savePlanBtn" type="button">Save plan</button>
           </div>
         </div>
@@ -197,7 +218,7 @@
             <p class="eyebrow small">Archive</p>
             <h2 id="archive-title">Saved plans</h2>
           </div>
-          <button class="ghost-btn" id="clearArchiveBtn" type="button">Clear archive</button>
+          <div class="button-row compact"><button class="ghost-btn" id="exportArchiveBtn" type="button">Export archive</button><button class="ghost-btn" id="clearArchiveBtn" type="button">Clear archive</button></div>
         </div>
         <div class="archive-filters" aria-label="Archive date filters">
           <label>
@@ -211,8 +232,11 @@
           <button class="ghost-btn" id="filterArchiveBtn" type="button">Filter</button>
           <button class="ghost-btn" id="clearArchiveFilterBtn" type="button">Clear filter</button>
         </div>
+        <div id="archiveWarning" class="archive-warning hidden">Your archive is getting full (75+ plans). Export or clear older plans to avoid losing them.</div>
         <div id="archiveList" class="archive-list empty-state">No saved plans yet.</div>
       </section>
+
+      <section id="shootOverlay" class="shoot-overlay hidden" aria-label="Shoot-day checklist"></section>
     </main>
   </div>
 

@@ -1,7 +1,16 @@
-const VERSION = 'V1.9';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.9';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.9';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.9';
+const VERSION = 'V2.0';
+const STORAGE_INPUTS = 'contentCompass.inputs.v2.0';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v2.0';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v2.0';
+const STORAGE_QUICK_MODE = 'contentCompass.quickMode.v2.0';
+const OLD_KEYS = {
+  inputs: 'contentCompass.inputs.v1.9',
+  current: 'contentCompass.currentPlan.v1.9',
+  archive: 'contentCompass.archive.v1.9'
+};
+const SESSION_COUNTER_KEY = 'contentCompass.sessionCounter.v2.0';
+const todaySeed = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
+if (!sessionStorage.getItem(SESSION_COUNTER_KEY)) sessionStorage.setItem(SESSION_COUNTER_KEY, String(Date.now() % 997));
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -23,55 +32,55 @@ const pillarRules = [
 const pillarCopy = {
   'The Woman': {
     direction: 'Today is about presence: a woman moving through the day with depth, grace, memory, and quiet strength.',
-    hook: ['I am listening to this chapter.', 'This age has its own light.', 'I have arrived differently.', 'I know myself more now.', 'I am here, fully.'],
-    turn: 'There is a tenderness in arriving at this age with more memory than fear.',
-    landing: 'Some chapters do not need to be explained. They only need to be lived with care.'
+    hook: ['This age has its own light.', 'I know this version of me.', 'The mirror is softer now.', 'I am carrying many lives.', 'There is power in quiet.', 'I have earned this calm.', 'The day met me gently.', 'I am not rushing myself.', 'Some confidence arrives quietly.', 'My life has texture now.', 'I am here with history.', 'The woman stayed with herself.'],
+    turn: ['I used to think confidence had to enter first. Now I know it can arrive quietly and still fill the room.', 'There is a tenderness in arriving at this age with more memory than fear.', 'Some days I do not need to explain who I am. I only need to move through the day honestly.', 'The older I get, the less I want to perform ease. I want to feel it.', 'There are years behind me, yes. But they are not weight. They are witness.', 'I am learning to let the frame hold the truth without dressing it up too much.'],
+    landing: ['Some chapters do not need to be explained. They only need to be lived with care.', 'I want to remember the woman who was present for this small, ordinary day.', 'Maybe grace is simply staying soft without disappearing.', 'What remains is not the performance, but the feeling I carried home.']
   },
   'Ordinary Life': {
     direction: 'Today is about ordinary life: streets, coffee, errands, rooms, light, and the quiet beauty of a day that does not need to be grand.',
-    hook: ['The ordinary became beautiful.', 'This little day stayed.', 'Nothing grand. Just life.', 'I came for moments like this.', 'This place held the day.'],
-    turn: 'I keep looking for the large story, and then the day gives me a small one that feels more honest.',
-    landing: 'Some places do not ask to be admired. They simply stay with you.'
+    hook: ['The ordinary held me today.', 'A small day stayed behind.', 'Nothing grand, only true.', 'This day had a pulse.', 'The street remembered me.', 'I came for this quiet.', 'The simple things spoke first.', 'Today did not need drama.', 'This place felt briefly familiar.', 'A little day became enough.', 'Life was soft here.', 'The day arrived slowly.'],
+    turn: ['I keep looking for the large story, and then the day gives me a small one that feels more honest.', 'There are places that do not ask to be admired. They simply make room for you.', 'I am starting to trust ordinary days more. They do not try so hard to be remembered.', 'Some moments become tender only after you stop asking them to be useful.', 'A street, a chair, a cup, a little noise. Sometimes that is the whole blessing.', 'The day did not perform for me. It just opened a little and let me in.'],
+    landing: ['Some places do not ask to be admired. They simply stay with you.', 'I want to keep the small proof that I was here and paying attention.', 'The day was not grand, but it gave me something gentle to carry.', 'Some memories begin as errands and end as warmth.']
   },
   'Sea & Stillness': {
     direction: 'Today is about sea and stillness: the kind of quiet that softens the body and steadies the heart.',
-    hook: ['The sea softened the day.', 'I needed this kind of quiet.', 'The water remembered for me.', 'Today asked me to slow down.', 'Stillness has its own voice.'],
-    turn: 'There are days when the sea does not say much, but somehow I understand everything better.',
-    landing: 'I am learning that rest can be a form of courage.'
+    hook: ['The sea softened the day.', 'I needed this quiet.', 'The water held the light.', 'Stillness found me here.', 'The sea did not hurry.', 'Today listened back.', 'The shore kept my silence.', 'I came to be still.', 'The light moved slowly.', 'Rest had a voice today.', 'The waves carried enough.', 'This quiet felt honest.'],
+    turn: ['There are days when the sea does not say much, but somehow I understand everything better.', 'I do not need every quiet day to become a lesson. Some days only need to loosen the grip.', 'The water has a way of making ambition feel less urgent and presence feel more necessary.', 'I came here with many thoughts, and the sea answered by moving slowly.', 'Stillness is not empty. It is full of things I can only hear when I stop rushing.', 'The shore reminds me that I can arrive without announcing myself.'],
+    landing: ['I am learning that rest can be a form of courage.', 'The quiet did not fix anything. It simply made room.', 'Some days are not meant to be solved. They are meant to be felt.', 'I carried the sound of the water home quietly.']
   },
   'Food': {
     direction: 'Today is about food as memory: coffee, bread, meals, appetite, warmth, and the way a table can hold a whole day.',
-    hook: ['This meal became a memory.', 'The table held the day.', 'Food remembers what we feel.', 'I tasted the day slowly.', 'Some stories begin at the table.'],
-    turn: 'I have always believed food remembers what we are too busy to say.',
-    landing: 'Some memories are not written down. They are served warm, passed by hand, and carried home quietly.'
+    hook: ['Food remembers what we feel.', 'The table held the day.', 'This meal became memory.', 'The bread carried warmth.', 'A meal can hold us.', 'Coffee kept the morning.', 'The plate told the story.', 'Some comfort arrives warm.', 'This tasted like remembering.', 'The table made room.', 'The day was served warm.', 'I remember this by taste.'],
+    turn: ['I have always believed food remembers what we are too busy to say.', 'There is a kind of comfort that arrives without speech: a plate, a cup, a hand passing something warm.', 'Food has always been one of the ways I understand love, place, and memory.', 'A table can become a diary when you let the day sit down with you.', 'The meal is simple, but the feeling around it is not.', 'Some days are remembered not by what happened, but by what was shared.'],
+    landing: ['Some memories are not written down. They are served warm, passed by hand, and carried home quietly.', 'I will remember this not as lunch, but as a feeling that stayed.', 'The table emptied, but something gentle remained.', 'A place can feed you in more ways than one.']
   },
   'Small Things': {
     direction: 'Today is about small things: doors, curtains, hands, shadows, textures, and the beauty that waits quietly.',
-    hook: ['The small things stayed.', 'I noticed the quiet details.', 'This little corner mattered.', 'Light found its way in.', 'Nothing happened. I remembered.'],
-    turn: 'There are days when a shadow, a cup, or a doorway tells the truth more gently than words.',
-    landing: 'I want to keep noticing the things that do not ask for attention.'
+    hook: ['The small things stayed.', 'Light found its way in.', 'I noticed this quietly.', 'A corner held the feeling.', 'This detail stayed behind.', 'The shadow said enough.', 'Beauty waited in silence.', 'A small thing mattered.', 'The room had a memory.', 'I almost missed this.', 'The texture carried the day.', 'Nothing happened. I remembered.'],
+    turn: ['There are days when a shadow, a cup, or a doorway tells the truth more gently than words.', 'I am learning that beauty does not always announce itself. Sometimes it waits in corners.', 'A small thing can hold a whole feeling when I stop moving too fast.', 'I trust the quiet details more than the obvious ones now.', 'There are objects that become memory because we looked at them long enough.', 'Sometimes the frame knows what the heart is trying to say.'],
+    landing: ['I want to keep noticing the things that do not ask for attention.', 'The smallest frame carried the deepest memory today.', 'I left the place, but the detail came with me.', 'This is how a day stays: not loudly, but clearly.']
   },
   'On the Road': {
     direction: 'Today is about movement: arrivals, departures, bags, windows, waiting, and the quiet emotion of being between places.',
-    hook: ['The road changed the mood.', 'Arriving is also a feeling.', 'I carried the day with me.', 'The window held the story.', 'Between places, I noticed myself.'],
-    turn: 'Every road has a way of bringing old thoughts with you and leaving a few behind.',
-    landing: 'There is a quiet kind of becoming that happens between leaving and arriving.'
+    hook: ['Arriving is also a feeling.', 'The road changed me slightly.', 'Between places, I listened.', 'The window held the story.', 'I carried the day with me.', 'Leaving has its own light.', 'The road made room.', 'Transit has a tenderness.', 'The bag knew first.', 'I was between versions.', 'Movement softened the thought.', 'The arrival began quietly.'],
+    turn: ['Every road has a way of bringing old thoughts with you and leaving a few behind.', 'Between places, I hear myself differently.', 'There is a quiet emotion in waiting that only travel seems to understand.', 'The road does not ask for answers. It only asks you to keep moving.', 'Arrivals are never only about reaching a place. They are also about noticing who arrived.', 'Sometimes the most honest part of a day happens before you get there.'],
+    landing: ['There is a quiet kind of becoming that happens between leaving and arriving.', 'I arrived with more than my bag. I arrived with the day still moving inside me.', 'The road ended, but the feeling kept going.', 'Some places begin before you reach them.']
   }
 };
 
 const moodLines = {
-  'Poetic': 'Use imagery and feeling first. Write with soul, restraint, and clarity.',
-  'Quiet': 'Keep the voice sparse and soulful. Let silence and images carry part of the feeling.',
-  'Witty': 'Keep the wit gentle and human. No punchlines, no gimmicks, no forced cleverness.',
-  'Observant': 'Let the story come from what you notice: light, food, hands, streets, sea, and small details.',
-  'Elegant': 'Use clean language, slower clips, and fewer words. Let the feeling stay refined.',
-  'Tired but showing up': 'Keep it honest and tender. No drama, no heroic tone.',
-  'Soft': 'Use warmth: hands, fabric, coffee, sea, light, food, and memory.',
-  'Bold': 'Use a clear hook, but keep the soul intact. Strength without shouting.',
-  'Restless': 'Use movement: walking, turning, leaving, arriving, searching, noticing.',
-  'Hungry': 'Let food be memory, not comedy. Warmth, appetite, table, sharing, and place.',
-  'In transit': 'Use windows, bags, roads, signs, waiting, arrival, and the emotion of transition.',
-  'Slightly dramatic but pretending not to be': 'Let the feeling be cinematic but restrained. Soulful, not sarcastic.'
+  'Poetic': 'Use imagery and feeling first. Keep the language clear, soulful, and unforced. Let one image carry more than one explanation.',
+  'Quiet': 'Keep the voice sparse and soulful. Let silence and images carry part of the feeling. Leave room for breath between lines.',
+  'Witty': 'Keep the wit gentle and human. No punchlines, no gimmicks, no forced cleverness. The humor should come from recognition, not performance.',
+  'Observant': 'Let the story come from what you notice: light, food, hands, streets, sea, and small details. Write as if the day revealed itself slowly.',
+  'Elegant': 'Use clean language, slower clips, and fewer words. Let the feeling stay refined. Avoid trend language and loud declarations.',
+  'Tired but showing up': 'Keep it honest and tender. No drama, no heroic tone. Let the softness of continuing be enough.',
+  'Soft': 'Use warmth: hands, fabric, coffee, sea, light, food, and memory. Keep the lines intimate but not private.',
+  'Bold': 'Use a clear hook, but keep the soul intact. Strength should feel calm, not shouted. Let presence be the statement.',
+  'Restless': 'Use movement: walking, turning, leaving, arriving, searching, noticing. Let the pacing carry the unsettled feeling without making it messy.',
+  'Hungry': 'Let food be memory, not comedy. Warmth, appetite, table, sharing, and place should lead the story.',
+  'In transit': 'Use windows, bags, roads, signs, waiting, arrival, and the emotion of transition. Let the between-place feeling become the point.',
+  'Slightly dramatic but pretending not to be': 'Let the feeling be cinematic but restrained. Soulful, not sarcastic. Make the scene beautiful without making yourself a spectacle.'
 };
 
 const timeNotes = {
@@ -165,7 +174,9 @@ function inferPillar(inputs) {
 }
 
 function pick(arr, seed, offset = 0) {
-  const value = Array.from(seed).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  const sessionCounter = sessionStorage.getItem(SESSION_COUNTER_KEY) || '0';
+  const mixedSeed = `${seed}-${todaySeed()}-${sessionCounter}`;
+  const value = Array.from(mixedSeed).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
   return arr[(value + offset) % arr.length];
 }
 
@@ -254,10 +265,10 @@ function buildScript(inputs, pillar, variant = 0, toneMode = 'balanced', adjustm
     '',
     pick(openers, seed, variant),
     pick(activityLines, seed, variant + 1),
-    copy.turn,
+    pick(copy.turn, seed, variant + 2),
     `What I want to remember is ${sensory}.`,
     reflection,
-    copy.landing
+    pick(copy.landing, seed, variant + 3)
   ];
   return { hook, body: lines.join('\n'), moodInstruction, variant, toneMode };
 }
@@ -611,6 +622,10 @@ function buildEditTimeline(inputs, pillar, script, videoChecklist = [], photoLis
 }
 
 function generatePlan(rawInputs, options = {}) {
+  if (!options.preserveSession) {
+    const currentCounter = Number(sessionStorage.getItem(SESSION_COUNTER_KEY) || '0');
+    sessionStorage.setItem(SESSION_COUNTER_KEY, String(currentCounter + 1));
+  }
   const adjustments = options.adjustments || [];
   const revisionNotes = options.revisionNotes || '';
   const inputs = adjustments.includes('no-face') ? { ...rawInputs, noFace: true, filmedOnce: 'No' } : { ...rawInputs, noFace: false };
@@ -634,6 +649,7 @@ function generatePlan(rawInputs, options = {}) {
 function renderPlan(plan) {
   const adjustmentText = plan.adjustments?.length ? ` · ${escapeHtml(getAdjustmentLabels(plan.adjustments).join(', '))}` : '';
   PLAN_OUTPUT.innerHTML = `
+    <div class="light-banner">☀ ${escapeHtml(timeNotes[plan.inputs.timeOfDay] || 'Use the best light available. Keep the frame clean and readable.')}</div>
     <article class="output-card call-sheet-head">
       <p class="kicker">Call sheet</p>
       <div class="call-title-row">
@@ -803,6 +819,11 @@ function wireChecks() {
       e.target.closest('.check-item').classList.toggle('done', e.target.checked);
     });
   });
+  $$('.timeline-item input').forEach(input => {
+    input.addEventListener('change', e => {
+      e.target.closest('.timeline-item').classList.toggle('done', e.target.checked);
+    });
+  });
 }
 
 
@@ -850,13 +871,16 @@ function planToText(plan) {
 function savePlan(plan) {
   const archive = JSON.parse(localStorage.getItem(STORAGE_ARCHIVE) || '[]');
   archive.unshift(plan);
-  localStorage.setItem(STORAGE_ARCHIVE, JSON.stringify(archive.slice(0, 30)));
+  localStorage.setItem(STORAGE_ARCHIVE, JSON.stringify(archive.slice(0, 90)));
+  if (archive.length >= 75) showToast('Archive is getting full. Export soon.');
   renderArchive();
 }
 
 function renderArchive() {
   const archive = JSON.parse(localStorage.getItem(STORAGE_ARCHIVE) || '[]');
   const list = $('#archiveList');
+  const warning = $('#archiveWarning');
+  if (warning) warning.classList.toggle('hidden', archive.length < 75);
   const fromValue = $('#archiveFrom')?.value;
   const toValue = $('#archiveTo')?.value;
   const fromDate = fromValue ? new Date(`${fromValue}T00:00:00`) : null;
@@ -894,6 +918,97 @@ function renderArchive() {
   }));
 }
 
+
+const presets = {
+  'lu-morning': { location: 'La Union beach, Philippines', activity: 'morning walk along the water, coffee, quiet sitting, journaling, sea light', mood: 'Quiet', timeOfDay: 'Morning', pillar: 'Sea & Stillness', angle: 'soulful' },
+  'lu-golden': { location: 'La Union beach, Philippines', activity: 'beach walk, golden hour light, sea, slow afternoon', mood: 'Poetic', timeOfDay: 'Golden hour', pillar: 'Sea & Stillness', angle: 'soulful' },
+  'manila-day': { location: 'Manila, Philippines', activity: 'errands, café, city streets, driving, ordinary city life', mood: 'Observant', timeOfDay: 'Afternoon', pillar: 'Ordinary Life', angle: 'simple-day' },
+  'clinic-day': { location: 'SUMMIT Clinic, Tektite, Ortigas, Manila', activity: 'work day at the clinic, patients, team, quiet moments between sessions', mood: 'Quiet', timeOfDay: 'Morning', pillar: 'The Woman', angle: 'quiet-power' },
+  'coffee-walk': { location: 'Local neighborhood, Manila or La Union', activity: 'morning coffee, walk, market, small errands, watching street life', mood: 'Observant', timeOfDay: 'Morning', pillar: 'Small Things', angle: 'details' },
+  'transit': { location: 'Airport / in transit / long drive', activity: 'waiting, driving, arriving, window watching, between places', mood: 'In transit', timeOfDay: 'Morning', pillar: 'On the Road', angle: 'memory' }
+};
+
+function applyQuickMode(isQuick) {
+  document.body.classList.toggle('quick-mode', isQuick);
+  $('#quickModeBtn')?.classList.toggle('active', isQuick);
+  $('#fullModeBtn')?.classList.toggle('active', !isQuick);
+  localStorage.setItem(STORAGE_QUICK_MODE, isQuick ? 'quick' : 'full');
+}
+
+function migrateStorage() {
+  const pairs = [[OLD_KEYS.inputs, STORAGE_INPUTS], [OLD_KEYS.current, STORAGE_CURRENT_PLAN], [OLD_KEYS.archive, STORAGE_ARCHIVE]];
+  pairs.forEach(([oldKey, newKey]) => {
+    if (!localStorage.getItem(newKey) && localStorage.getItem(oldKey)) {
+      localStorage.setItem(newKey, localStorage.getItem(oldKey));
+    }
+  });
+}
+
+function validateVideoLengthLater() {
+  const input = $('#videoLength');
+  const feedback = $('#videoLengthFeedback');
+  if (!input || !feedback) return;
+  const value = Number(input.value);
+  const valid = Number.isFinite(value) && value >= 15 && value <= 90;
+  feedback.className = `field-feedback ${valid ? 'valid' : 'invalid'}`;
+  feedback.textContent = valid ? '✓ Valid length' : 'Enter a number between 15 and 90 seconds.';
+  clearTimeout(input._fixTimer);
+  if (!valid) {
+    input._fixTimer = setTimeout(() => {
+      const raw = Number(input.value || 45);
+      input.value = String(Math.max(15, Math.min(90, Number.isFinite(raw) ? Math.round(raw) : 45)));
+      validateVideoLengthLater();
+    }, 1500);
+  }
+}
+
+function renderShootOverlay(plan) {
+  const overlay = $('#shootOverlay');
+  if (!overlay) return;
+  const lightTip = timeNotes[plan.inputs.timeOfDay] || 'Use the best light available.';
+  overlay.innerHTML = `
+    <div class="shoot-topbar">
+      <div><p class="kicker">Field checklist</p><h2>${escapeHtml(plan.script.hook)}</h2></div>
+      <button class="ghost-btn shoot-close" type="button">× Close</button>
+    </div>
+    <div class="shoot-light">☀ ${escapeHtml(lightTip)}</div>
+    ${(plan.videoChecklist || []).length ? `<h3>Video shots</h3><div class="shoot-list">${plan.videoChecklist.map((item, index) => `<label class="shoot-line"><input type="checkbox"><span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.duration)}</strong><br>${escapeHtml(item.shot)}<br><em>Script cue: ${escapeHtml(plan.editTimeline?.[index]?.scriptLine || plan.script.hook)}</em></span></label>`).join('')}</div>` : ''}
+    ${(plan.photoList || []).length ? `<h3>Photos</h3><div class="shoot-list">${plan.photoList.map((item, index) => `<label class="shoot-line"><input type="checkbox"><span>${escapeHtml(index + 1)}. ${escapeHtml(item)}</span></label>`).join('')}</div>` : ''}
+  `;
+  overlay.classList.remove('hidden');
+  overlay.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  overlay.querySelector('.shoot-close')?.addEventListener('click', () => overlay.classList.add('hidden'));
+  overlay.querySelectorAll('input[type="checkbox"]').forEach(input => input.addEventListener('change', e => e.target.closest('label').classList.toggle('done', e.target.checked)));
+}
+
+function exportArchive() {
+  const archive = JSON.parse(localStorage.getItem(STORAGE_ARCHIVE) || '[]');
+  if (!archive.length) return showToast('No saved plans to export.');
+  const divider = '\n\n----------------------------------------\n\n';
+  const text = archive.map(plan => `DATE\n${new Date(plan.createdAt).toLocaleString()}\n\nLOCATION\n${plan.inputs.location}\n\nPILLAR\n${plan.pillar}\n\nHOOK\n${plan.script.hook}\n\nSCRIPT\n${plan.script.body}\n\nCAPTION\n${plan.caption}`).join(divider);
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `content-compass-archive-${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Archive exported.');
+}
+
+async function shareCurrentPlan() {
+  const plan = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null');
+  if (!plan) return showToast('Generate a plan first.');
+  const text = planToText(plan);
+  const title = `Content Compass — ${plan.inputs.location} — ${new Date(plan.createdAt).toLocaleDateString()}`;
+  if (navigator.share) {
+    try { await navigator.share({ title, text }); showToast('Shared.'); return; } catch (error) { if (error.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(text); showToast('Copied — paste into your Notes app.'); } catch (error) { showToast('Share unavailable. Copy manually.'); }
+}
+
 FORM.addEventListener('submit', event => {
   event.preventDefault();
   const inputs = getInputs();
@@ -928,6 +1043,24 @@ $('#copyPlanBtn').addEventListener('click', async () => {
   }
 });
 
+$('#sharePlanBtn')?.addEventListener('click', shareCurrentPlan);
+$('#shootOnlyBtn')?.addEventListener('click', () => {
+  const plan = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null');
+  if (!plan) return showToast('Generate a plan first.');
+  renderShootOverlay(plan);
+});
+$('#exportArchiveBtn')?.addEventListener('click', exportArchive);
+$('#quickModeBtn')?.addEventListener('click', () => applyQuickMode(true));
+$('#fullModeBtn')?.addEventListener('click', () => applyQuickMode(false));
+$('#videoLength')?.addEventListener('input', validateVideoLengthLater);
+$$('.preset-pill').forEach(btn => btn.addEventListener('click', () => {
+  const preset = presets[btn.dataset.preset];
+  if (!preset) return;
+  setInputs({ ...getInputs(), ...preset });
+  $('#presetStatus').textContent = `Preset loaded: ${btn.textContent.trim()}. Check and generate.`;
+  showToast('Preset loaded — check and generate.');
+}));
+
 $('#tryAgainBtn').addEventListener('click', () => {
   const current = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null');
   const inputs = current?.inputs || getInputs();
@@ -956,7 +1089,8 @@ $('#resetBtn').addEventListener('click', () => {
 });
 
 $('#clearArchiveBtn').addEventListener('click', () => {
-  if (!confirm('Clear all saved plans on this device?')) return;
+  const count = JSON.parse(localStorage.getItem(STORAGE_ARCHIVE) || '[]').length;
+  if (!confirm(`This will permanently delete all ${count} saved plans on this device. Export first if you want to keep them.`)) return;
   localStorage.removeItem(STORAGE_ARCHIVE);
   renderArchive();
   showToast('Archive cleared.');
@@ -981,10 +1115,13 @@ $('#loadSampleBtn').addEventListener('click', () => {
 });
 
 function init() {
+  migrateStorage();
+  applyQuickMode(localStorage.getItem(STORAGE_QUICK_MODE) !== 'full');
   setInputs(JSON.parse(localStorage.getItem(STORAGE_INPUTS) || 'null'));
   const current = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null');
   if (current) renderPlan(current);
   renderArchive();
+  validateVideoLengthLater();
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
