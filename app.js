@@ -1,7 +1,7 @@
-const VERSION = 'V1.4';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.4';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.4';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.4';
+const VERSION = 'V1.5';
+const STORAGE_INPUTS = 'contentCompass.inputs.v1.5';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.5';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v1.5';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -16,7 +16,7 @@ const pillarRules = [
   { name: 'Food', terms: ['food','lunch','dinner','breakfast','coffee','cafe','café','bakery','taverna','restaurant','market','eat','meal','bread','pastry'] },
   { name: 'On the Road', terms: ['airport','drive','car','road','ferry','arrive','arrival','leave','leaving','travel','transit','train','plane'] },
   { name: 'Small Things', terms: ['door','window','curtain','light','shadow','chair','texture','balcony','notebook','journal','sketch'] },
-  { name: 'Ordinary Greece', terms: ['halandri','athens','street','walk','greece','greek','home','neighborhood','errand','grocery'] },
+  { name: 'Ordinary Life', terms: ['street','walk','home','neighborhood','errand','grocery','cafe','café','city','market','mall','clinic','office','hotel','village','town','manila','la union','athens','greece','philippines'] },
   { name: 'The Woman', terms: ['age','56','makeup','beauty','work','strategy','journal','confidence','lola','grandmother'] }
 ];
 
@@ -27,10 +27,10 @@ const pillarCopy = {
     turn: 'There is a tenderness in arriving at this age with more memory than fear.',
     landing: 'Some chapters do not need to be explained. They only need to be lived with care.'
   },
-  'Ordinary Greece': {
-    direction: 'Today is about ordinary Greece: coffee, streets, language, light, and the quiet beauty of daily life.',
-    hook: ['Greece is quiet today.', 'The ordinary became beautiful.', 'This street stayed with me.', 'I came for moments like this.', 'Nothing grand. Just Greece.'],
-    turn: 'I keep looking for the large story, and then Greece gives me a small one that feels more honest.',
+  'Ordinary Life': {
+    direction: 'Today is about ordinary life: streets, coffee, errands, rooms, light, and the quiet beauty of a day that does not need to be grand.',
+    hook: ['The ordinary became beautiful.', 'This little day stayed.', 'Nothing grand. Just life.', 'I came for moments like this.', 'This place held the day.'],
+    turn: 'I keep looking for the large story, and then the day gives me a small one that feels more honest.',
     landing: 'Some places do not ask to be admired. They simply stay with you.'
   },
   'Sea & Stillness': {
@@ -41,7 +41,7 @@ const pillarCopy = {
   },
   'Food': {
     direction: 'Today is about food as memory: coffee, bread, meals, appetite, warmth, and the way a table can hold a whole day.',
-    hook: ['This meal became a memory.', 'The table held the day.', 'Food remembers what we feel.', 'I tasted Greece slowly.', 'Some stories begin at the table.'],
+    hook: ['This meal became a memory.', 'The table held the day.', 'Food remembers what we feel.', 'I tasted the day slowly.', 'Some stories begin at the table.'],
     turn: 'I have always believed food remembers what we are too busy to say.',
     landing: 'Some memories are not written down. They are served warm, passed by hand, and carried home quietly.'
   },
@@ -139,7 +139,7 @@ function setInputs(data) {
 function inferPillar(inputs) {
   if (inputs.pillar && inputs.pillar !== 'auto') return inputs.pillar;
   const text = `${inputs.location} ${inputs.activity} ${inputs.mood}`.toLowerCase();
-  let best = { name: 'Ordinary Greece', score: 0 };
+  let best = { name: 'Ordinary Life', score: 0 };
   for (const rule of pillarRules) {
     const score = rule.terms.reduce((count, term) => count + (text.includes(term) ? 1 : 0), 0);
     if (score > best.score) best = { name: rule.name, score };
@@ -207,7 +207,7 @@ function buildScript(inputs, pillar, variant = 0, toneMode = 'balanced') {
 function sensoryPhrase(pillar, inputs, variant = 0) {
   const bank = {
     'The Woman': ['the way the light falls on my face, the quiet in my body, and the woman I have carried all these years', 'my hands, my pace, my reflection, and the softness of being here now', 'a small glimpse of myself in this place, older, clearer, and more awake'],
-    'Ordinary Greece': ['the coffee, the street, the low voices, the balconies, and the ordinary rhythm of Greece', 'a small street, a table, the morning light, and the sound of a language I am slowly learning', 'the simple things: coffee, stone, shade, movement, and the feeling of being briefly at home somewhere new'],
+    'Ordinary Life': ['the coffee, the street, the low voices, the room, and the ordinary rhythm of the place', 'a small street, a table, the morning light, and the sound of the day around me', 'the simple things: coffee, shade, movement, a doorway, and the feeling of being briefly at home somewhere'],
     'Sea & Stillness': ['the sea, the wind, the stones, the towel, and the quiet that comes after rushing', 'the water, the light, the sound of waves, and the way the day loosens its grip', 'a chair near the water, my feet on the ground, and the kind of silence that feels kind'],
     'Food': ['the table, the bread, the plate, the warmth, and the way a meal can hold a memory', 'coffee, food, hands, conversation, and the comfort of being fed by a place', 'the first bite, the shared table, the small rituals, and the feeling of being welcomed by taste'],
     'Small Things': ['a doorway, a shadow, a cup, a curtain, a hand, and the quiet beauty that waits in corners', 'one line of light, one texture, one object, and the small grace of paying attention', 'the details I almost missed: stone, fabric, table, glass, shadow, and air'],
@@ -219,7 +219,7 @@ function sensoryPhrase(pillar, inputs, variant = 0) {
 function reflectionLine(pillar, inputs, variant = 0, toneMode = 'balanced') {
   const bank = {
     'The Woman': ['I am not trying to turn this into a lesson. I only want to meet myself honestly in the frame.', 'There is power in being seen without performing for the gaze.', 'Maybe this is what confidence becomes when it no longer needs to be loud.'],
-    'Ordinary Greece': ['The beauty is not asking for attention, which makes me want to pay attention even more.', 'Maybe ordinary days are the ones that tell the truth most clearly.', 'This is the kind of Greece I want to remember: unannounced, generous, and real.'],
+    'Ordinary Life': ['The beauty is not asking for attention, which makes me want to pay attention even more.', 'Maybe ordinary days are the ones that tell the truth most clearly.', 'This is the kind of day I want to remember: unannounced, generous, and real.'],
     'Sea & Stillness': ['The sea does not hurry me, and for once I am trying not to hurry myself.', 'I do not need the day to become useful. I need it to become felt.', 'There is a kind of peace that arrives only when I stop negotiating with the moment.'],
     'Food': ['A table can become a diary when you let the day sit down with you.', 'Food has always been one of the ways I understand love, place, and memory.', 'The meal is simple, but the feeling around it is not.'],
     'Small Things': ['A small thing can hold a whole feeling when I stop moving too fast.', 'I am beginning to trust the quiet details more than the obvious ones.', 'Sometimes the smallest frame carries the deepest memory.'],
@@ -242,12 +242,12 @@ function buildScenes(inputs, pillar, script) {
       ['Emotional detail', 'A quiet contrast: dressed with care, carrying a practical bag, coffee beside notebook, wind moving fabric or hair.', 'Photo: honest candid detail.'],
       ['Soft landing', 'Quiet ending: walking away, closing notebook, cup on table, or doorway after you pass.', 'Photo: final frame with space.']
     ],
-    'Ordinary Greece': [
-      ['Hook visual', `Exterior or first view of ${location}. Hold 3 seconds before moving.`, 'Cover photo: street/café with empty space for hook text.'],
+    'Ordinary Life': [
+      ['Hook visual', `Exterior, room, street, or first view of ${location}. Hold 3 seconds before moving.`, 'Cover photo: place/street/room/table with empty space for hook text.'],
       ['Personal turn', 'Coffee, table, receipt, chair, or your hand entering the frame.', 'Photo: overhead table shot.'],
-      ['Sensory proof', 'Slow walking clip: balcony, pavement, bakery sign, quiet street, light on wall.', 'Photo: street detail.'],
-      ['Emotional detail', 'Something ordinary but full of life: chair, napkin, cup, sign, scooter, balcony, or a table after someone leaves.', 'Photo: ordinary detail with feeling.'],
-      ['Soft landing', 'Still ending: empty chair, cup after coffee, street after you leave, light on wall.', 'Photo: calm closing image.']
+      ['Sensory proof', 'Slow walking or looking clip: doorway, pavement, window, counter, quiet street, hallway, or light on wall.', 'Photo: street detail.'],
+      ['Emotional detail', 'Something ordinary but full of life: chair, napkin, cup, sign, window, bag, counter, or a table after someone leaves.', 'Photo: ordinary detail with feeling.'],
+      ['Soft landing', 'Still ending: empty chair, cup after coffee, hallway, table after you leave, street, or light on wall.', 'Photo: calm closing image.']
     ],
     'Sea & Stillness': [
       ['Hook visual', 'Wide sea shot before you enter the frame. Hold still for 4 seconds.', 'Cover photo: sea with negative space.'],
@@ -323,7 +323,7 @@ function buildVideoChecklist(inputs, pillar, scenes = []) {
   if (pillar === 'On the Road') push('Transition proof', 'Window, bag, shoes, sign, key, or first view after arrival.', 'Makes the movement understandable.');
   if (pillar === 'The Woman') push('Face or silhouette', 'One natural glimpse of your face, side profile, mirror, or silhouette.', 'The audience connects to your presence.');
   if (pillar === 'Small Things') push('Pattern detail', 'Create a tiny sequence: object → light → hand → stillness.', 'Small things need visual rhythm.');
-  if (pillar === 'Ordinary Greece') push('Local rhythm', 'One ordinary local detail: chair, balcony, bakery window, scooter, pavement, street sign, voices, or coffee counter.', 'Keeps Greece real, not touristy.');
+  if (pillar === 'Ordinary Life') push('Local rhythm', 'One ordinary local detail: chair, window, counter, pavement, sign, hallway, voices, receipt, table, or coffee cup.', 'Keeps the place real, not staged.');
 
   return chosen.slice(0, shotCount).map((item, index) => ({ ...item, number: index + 1 }));
 }
@@ -337,7 +337,7 @@ function buildTargetFit(inputs, pillar, script) {
   };
   const checks = [
     'Clear first 1.5 seconds: the hook must appear as text immediately, especially for 15–30 second videos.',
-    'The woman is the center: Greece supports the story but does not replace you.',
+    'The woman is the center: the place supports the story but does not replace you.',
     'At least one human presence shot: face, silhouette, hands, walking, or reflection.',
     'At least one sensory detail: food, light, sea, fabric, stone, coffee, street, or sound.',
     'No redundant footage: do not repeat the same table, coffee, door, or sea angle unless the emotion changes.',
@@ -366,7 +366,7 @@ function buildPhotoList(inputs, pillar, scenes = []) {
     'On the Road': ['Transition photo: bag, window, road sign, seat, or first view after arrival.'],
     'The Woman': ['Presence photo: one natural image of you from side/back, not posed too perfectly.'],
     'Small Things': ['Object photo: one small detail that can carry the whole mood of the day.'],
-    'Ordinary Greece': ['Everyday Greece photo: balcony, café chair, street sign, bakery window, or pavement light.']
+    'Ordinary Life': ['Everyday-life photo: window, café chair, street sign, counter, hallway, table, or pavement light.']
   };
   const list = uniqueList([base[0], ...(additions[pillar] || []), ...base.slice(1)]);
   return list.slice(0, 6);
@@ -375,15 +375,15 @@ function buildPhotoList(inputs, pillar, scenes = []) {
 function buildCaption(inputs, pillar, hook) {
   const tagMap = {
     'The Woman': '#over50 #filipina #agingpowerfully #midlifewoman #editinglife',
-    'Ordinary Greece': '#over50 #filipina #ordinarygreece #maturetraveler #greecediary',
-    'Sea & Stillness': '#over50 #filipina #seastillness #maturetraveler #assosgreece',
-    'Food': '#over50 #filipina #greekfood #foodmemory #greeceeats',
+    'Ordinary Life': '#over50 #filipina #ordinarylife #soulfulcontent #dailyrituals',
+    'Sea & Stillness': '#over50 #filipina #seastillness #slowcontent #soulfultravel',
+    'Food': '#over50 #filipina #foodmemory #soulfulcontent #tablemoments',
     'Small Things': '#over50 #filipina #smallthings #slowcontent #noticinglife',
-    'On the Road': '#over50 #filipina #maturetraveler #ontheroad #greecearrival'
+    'On the Road': '#over50 #filipina #maturetraveler #ontheroad #betweenplaces'
   };
   const captions = {
     'The Woman': 'This chapter has its own light.',
-    'Ordinary Greece': 'A quiet piece of Greece stayed with me.',
+    'Ordinary Life': 'A quiet piece of the day stayed with me.',
     'Sea & Stillness': 'The sea softened the day.',
     'Food': 'A meal, a place, a memory.',
     'Small Things': 'The small things stayed.',
@@ -672,8 +672,8 @@ $('#clearArchiveBtn').addEventListener('click', () => {
 
 $('#loadSampleBtn').addEventListener('click', () => {
   setInputs({
-    location: 'Halandri café',
-    activity: 'coffee, walking, watching the street, maybe one bakery stop',
+    location: 'Neighborhood café',
+    activity: 'coffee, walking, watching the street, one small errand',
     mood: 'Observant',
     energy: 'Medium',
     timeOfDay: 'Morning',

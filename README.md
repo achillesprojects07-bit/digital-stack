@@ -1,34 +1,36 @@
-# Content Compass V1.4
+# Content Compass V1.5 — Blue Soulful Anywhere
 
 A GitHub Pages PWA for Aileen's social media content planning.
 
+## Core idea
+
+You enter the basic reality of the day: location, activity, mood, energy, time of day, and target video length. The app writes the story first, then builds the scenes, video checklist, photo checklist, caption, and editing guide from that story.
+
 ## What it does
 
-- Takes simple daily inputs: location, activity, mood, time, energy, filming help.
+- Works for any location: Greece, Manila, La Union, airports, events, cafés, clinics, home days, beaches, road trips, restaurants, hotel rooms, or ordinary errands.
+- Lets you enter any target video length from 15–90 seconds.
 - Generates a script-first TikTok/Reels plan.
-- Builds scene-by-scene video shots from the script.
-- Creates photo shot list, caption, hashtags, thumbnail text, and CapCut edit brief.
+- Builds a non-redundant video checklist with a different purpose for every shot.
+- Creates photo shots, caption, hashtags, thumbnail direction, and simple CapCut instructions.
+- Adds controls to try another version or make the plan more soulful.
+- Includes date filters in the archive.
 - Saves inputs and plans locally in the browser with localStorage.
 - Works offline after the first successful load through a service worker.
 
-## V1.4 writing style update
+## V1.5 updates
 
-This version removes the gimmicky/dry punchline style and replaces it with a more poetic, reflective, soulful voice.
+- Changed the app from Greece-centered to anywhere-centered.
+- Renamed the pillar from Ordinary Greece to Ordinary Life.
+- Removed Greece-only captions, hashtags, and scene logic.
+- Kept Greece as one possible place, not the whole app identity.
+- Updated sample location to a generic neighborhood café.
 
-Removed tone patterns such as:
-- “Growth, but with chips.”
-- “I ordered the evidence.”
-- “doing the very ambitious work of lunch…”
-- forced sarcasm, forced wit, and strange food jokes.
+## Writing direction
 
-New tone direction:
-- poetic but clear
-- reflective and full of soul
-- warm, sensory, grounded
-- Greece as feeling and setting
-- food as memory
-- small things as emotional detail
-- strength without shouting
+The voice should be poetic, reflective, soulful, warm, sensory, and grounded. The app should avoid gimmicky lines, forced jokes, forced wit, and strange food metaphors.
+
+The woman is the center. The place supports the story.
 
 ## How to deploy on GitHub Pages
 
@@ -45,19 +47,3 @@ New tone direction:
 - This is GitHub-only V1. Data is saved on the current device only.
 - Firebase sync is intentionally not included yet.
 - When Firebase is added later, saved plans can sync across phone and MacBook.
-- Blue theme retained from V1.0 blue update.
-
-
-## V1.4 updates
-- Added Try another version and Make it more soulful controls.
-- Added Story angle and What to avoid fields.
-- Tightened video/photo logic so shots are useful and non-redundant.
-- Added archive date filters.
-
-
-## V1.4 updates
-- Added target video length: 30, 45, 60, 75, or 90 seconds.
-- Added a real must-shoot video checklist with separate job, shot, duration, and reason for every clip.
-- Added target-market fit check for Filipino women 45–65 and related audience focuses.
-- Simplified the CapCut/editing brief into plain step-by-step instructions.
-- Tightened non-redundant video/photo logic so every clip has a different job.
