@@ -188,3 +188,5 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent); box-shadow:0
 .song-box p{margin:8px 0}
 .song-chip{display:inline-flex; margin:4px 6px 4px 0; padding:7px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; font-weight:800; color:var(--accent)}
 @media(max-width:760px){.timeline-item{grid-template-columns:auto 30px 1fr}.timeline-body{font-size:.94rem}}
+
+.intro-line{font-size:1rem;line-height:1.55;color:#385179;margin:0.5rem 0 0;}

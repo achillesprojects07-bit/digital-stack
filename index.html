@@ -14,11 +14,11 @@
     <header class="hero">
       <div class="topline">
         <span class="brand-dot"></span>
-        <span class="version">V1.8</span>
+        <span class="version">V1.9</span>
       </div>
       <p class="eyebrow">Aging Powerfully</p>
       <h1>Content Compass</h1>
-      <p class="subtitle">Tell me where you are, your mood, and your target length. I’ll write the story first, then show the hook, script, video checklist, photos, shot-by-shot edit timeline, song direction, sound effects, transitions, and revision controls in a cleaner call-sheet flow.</p>
+      <p class="subtitle">Tell me where you are, what you feel, and how much video or photo you want today. I’ll turn it into a script, shot list, photo list, and edit timeline.</p>
     </header>
 
     <main>
@@ -30,23 +30,7 @@
           </div>
           <button class="ghost-btn" id="loadSampleBtn" type="button">Sample day</button>
         </div>
-        <div class="dash-grid">
-          <div class="dash-card">
-            <span class="dash-label">Mode</span>
-            <strong>Script first</strong>
-            <p>Script → scenes → shots → edit brief.</p>
-          </div>
-          <div class="dash-card">
-            <span class="dash-label">Default privacy</span>
-            <strong>Public-safe</strong>
-            <p>The focus is what you notice.</p>
-          </div>
-          <div class="dash-card">
-            <span class="dash-label">Output</span>
-            <strong>One TikTok story</strong>
-            <p>With target-market fit check, video checklist, photo list, and simple edit plan.</p>
-          </div>
-        </div>
+        <p class="intro-line">Tell me where you are, what you’re doing, your mood, and your video/photo balance. I’ll build the story first, then the shots in the right order.</p>
       </section>
 
       <section class="panel" aria-labelledby="input-title">
@@ -113,7 +97,21 @@
             <label>
               Target video length
               <input id="videoLength" name="videoLength" type="number" min="15" max="90" step="5" value="45" inputmode="numeric" />
-              <small class="field-note">Enter any length from 15–90 seconds. Example: 15, 30, 45, 60.</small>
+              <small class="field-note">For video or mixed plans. Enter 15–90 seconds.</small>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Video / Photo balance
+              <select id="captureBalance" name="captureBalance">
+                <option value="video-only">100% video · no photo list</option>
+                <option value="mostly-video" selected>Mostly video · 80% video / 20% photos</option>
+                <option value="balanced">Balanced · 50% video / 50% photos</option>
+                <option value="mostly-photo">Mostly photos · 30% video / 70% photos</option>
+                <option value="photo-only">100% photos · no video checklist</option>
+              </select>
+              <small class="field-note">Choose how you want to capture the day. The app will adjust the checklist and edit timeline.</small>
             </label>
           </div>
 

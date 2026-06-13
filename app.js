@@ -1,7 +1,7 @@
-const VERSION = 'V1.8';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.8';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.8';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.8';
+const VERSION = 'V1.9';
+const STORAGE_INPUTS = 'contentCompass.inputs.v1.9';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.9';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v1.9';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -99,6 +99,21 @@ function timingProfile(target) {
   return { shots: 14, dur: '4–6 sec', words: 150, edit: 'full voiceover: use only if the story truly needs space' };
 }
 
+function captureProfile(balance) {
+  const map = {
+    'video-only': { label: '100% video', videoRatio: 1, photoRatio: 0, videoScale: 1, photoCount: 0, timeline: 'video' },
+    'mostly-video': { label: 'Mostly video · 80/20', videoRatio: 0.8, photoRatio: 0.2, videoScale: 0.85, photoCount: 2, timeline: 'mixed' },
+    'balanced': { label: 'Balanced · 50/50', videoRatio: 0.5, photoRatio: 0.5, videoScale: 0.65, photoCount: 5, timeline: 'mixed' },
+    'mostly-photo': { label: 'Mostly photos · 30/70', videoRatio: 0.3, photoRatio: 0.7, videoScale: 0.4, photoCount: 7, timeline: 'mixed' },
+    'photo-only': { label: '100% photos', videoRatio: 0, photoRatio: 1, videoScale: 0, photoCount: 8, timeline: 'photo' }
+  };
+  return map[balance] || map['mostly-video'];
+}
+
+function captureLabel(balance) {
+  return captureProfile(balance).label;
+}
+
 function showToast(message) {
   TOAST.textContent = message;
   TOAST.classList.add('show');
@@ -113,6 +128,7 @@ function getInputs() {
     energy: $('#energy').value,
     timeOfDay: $('#timeOfDay').value,
     videoLength: normalizeTargetLength($('#videoLength').value),
+    captureBalance: $('#captureBalance') ? $('#captureBalance').value : 'mostly-video',
     filmedOnce: $('#filmedOnce').value,
     audienceFocus: $('#audienceFocus').value,
     pillar: $('#pillar').value,
@@ -129,6 +145,7 @@ function setInputs(data) {
   $('#energy').value = data.energy || 'Medium';
   $('#timeOfDay').value = data.timeOfDay || 'Morning';
   $('#videoLength').value = String(normalizeTargetLength(data.videoLength || 45));
+  if ($('#captureBalance')) $('#captureBalance').value = data.captureBalance || 'mostly-video';
   $('#filmedOnce').value = data.filmedOnce || 'No';
   $('#audienceFocus').value = data.audienceFocus || 'filipina45';
   $('#pillar').value = data.pillar || 'auto';
@@ -342,9 +359,11 @@ function uniqueList(items) {
 
 
 function buildVideoChecklist(inputs, pillar, scenes = []) {
-  const target = normalizeTargetLength(inputs.videoLength);
-  const profile = timingProfile(target);
-  const shotCount = profile.shots;
+  const profile = timingProfile(normalizeTargetLength(inputs.videoLength));
+  const capture = captureProfile(inputs.captureBalance);
+  if (capture.videoRatio === 0) return [];
+
+  const shotCount = Math.max(3, Math.round(profile.shots * capture.videoScale));
   const baseDur = profile.dur;
   const chosen = [];
   const push = (job, shot, why, duration = baseDur) => chosen.push({ job, shot, why, duration });
@@ -403,12 +422,17 @@ function buildTargetFit(inputs, pillar, script, adjustments = []) {
 }
 
 function buildPhotoList(inputs, pillar, scenes = []) {
+  const capture = captureProfile(inputs.captureBalance);
+  if (capture.photoRatio === 0) return [];
   const base = [
     'Cover photo: vertical frame with clean negative space for text overlay.',
     'Place photo: one image that clearly shows where the story happens, not just a close-up.',
     'Human detail: hand, walking feet, side profile, notebook, bag, or silhouette — one only.',
     'Texture photo: light, wall, table, stone, curtain, menu, shadow, or street detail.',
-    'Ending photo: quiet final frame after the moment has passed — empty chair, table, doorway, sea, or street.'
+    'Ending photo: quiet final frame after the moment has passed — empty chair, table, doorway, sea, or street.',
+    'Memory photo: the one image you would want to find again five years from now.',
+    'Transition photo: bag, door, receipt, shoes, road, hallway, or first view after arrival.',
+    'Breathing-space photo: one simple frame with no clutter and no need to explain.'
   ];
   const additions = {
     'Food': ['Food memory photo: one plate or table image after the first bite, not a perfect menu shot.'],
@@ -419,7 +443,7 @@ function buildPhotoList(inputs, pillar, scenes = []) {
     'Ordinary Life': ['Everyday-life photo: window, café chair, street sign, counter, hallway, table, or pavement light.']
   };
   const list = uniqueList([base[0], ...(additions[pillar] || []), ...base.slice(1)]);
-  return list.slice(0, 6);
+  return list.slice(0, capture.photoCount);
 }
 
 function buildCaption(inputs, pillar, hook) {
@@ -442,11 +466,24 @@ function buildCaption(inputs, pillar, hook) {
   return `${captions[pillar]} ${tagMap[pillar]}`;
 }
 
-function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = [], adjustments = []) {
+function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = [], photoList = [], adjustments = []) {
   const target = normalizeTargetLength(inputs.videoLength);
   const profile = timingProfile(target);
-  const clipCount = videoChecklist.length || profile.shots;
+  const capture = captureProfile(inputs.captureBalance);
+  const clipCount = videoChecklist.length || photoList?.length || profile.shots;
   const voiceWords = profile.words;
+  if (capture.timeline === 'photo') {
+    return [
+      `Create a photo-first post or photo-video montage. Use the photo sequence shown in the edit timeline.`,
+      `If making a Reel/TikTok from photos, set each photo to around ${Math.max(2, Math.round(target / Math.max(1, clipCount)))} seconds and add gentle motion/zoom only.`,
+      `Use the hook text on Photo 1 only: “${script.hook}”.`,
+      'Use soft crossfades only. No flashy transitions.',
+      `Record the voiceover only if you want it; keep it around ${voiceWords} words or less.`,
+      'Use music low and warm. Let the photos feel like memory, not a slideshow template.',
+      'Remove duplicate photos. If two photos show the same table, door, view, or angle, keep the one with stronger feeling.',
+      `Thumbnail/cover: use the cleanest cover photo and this short text: “${script.hook}”`
+    ];
+  }
   return [
     `Create a ${target}-second vertical project. Import the clips in the exact sequence shown in the edit timeline below.`,
     `Trim to ${clipCount} strong shots. Most clips should be around ${profile.dur}; cut sooner if the frame stops saying something.`,
@@ -541,7 +578,11 @@ function buildSongSuggestions(inputs, pillar) {
 
 function buildEditTimeline(inputs, pillar, script, videoChecklist = [], photoList = []) {
   const target = normalizeTargetLength(inputs.videoLength);
-  const shots = videoChecklist.length ? videoChecklist : [{ job: 'Opening frame', shot: `First visual of ${inputs.location}`, why: 'Establishes the moment.' }];
+  const capture = captureProfile(inputs.captureBalance);
+  const sourceItems = capture.timeline === 'photo'
+    ? photoList.map((shot, index) => ({ job: `Photo ${index + 1}`, shot, why: 'Photo-first story frame.' }))
+    : (videoChecklist.length ? videoChecklist : photoList.map((shot, index) => ({ job: `Photo insert ${index + 1}`, shot, why: 'Still photo used as visual support.' })));
+  const shots = sourceItems.length ? sourceItems : [{ job: 'Opening frame', shot: `First visual of ${inputs.location}`, why: 'Establishes the moment.' }];
   const lines = distributeLines(splitScriptLines(script), shots.length);
   const rawDur = target / shots.length;
   let cursor = 0;
@@ -550,12 +591,14 @@ function buildEditTimeline(inputs, pillar, script, videoChecklist = [], photoLis
     const start = cursor;
     const end = Math.min(target, cursor + duration);
     cursor = end;
-    const photoInsert = photoList[index % Math.max(1, photoList.length)] || 'Optional photo insert only if the video clip is weak.';
+    const photoInsert = capture.timeline === 'video'
+      ? 'No photo insert needed for video-only balance.'
+      : (photoList[index % Math.max(1, photoList.length)] || 'Optional photo insert only if the video clip is weak.');
     return {
       number: index + 1,
       time: `${formatTime(start)}–${formatTime(end)}`,
       duration: `${Math.max(1, Math.round(end - start))}s`,
-      media: index === shots.length - 1 ? 'Video or photo ending' : 'Video clip',
+      media: capture.timeline === 'photo' ? 'Photo frame' : (index === shots.length - 1 ? 'Video or photo ending' : 'Video clip'),
       place: shot.shot,
       scriptLine: lines[index],
       textOverlay: index === 0 ? script.hook : (index === shots.length - 1 ? 'Optional final line, very short.' : 'None, unless this line needs emphasis.'),
@@ -580,7 +623,7 @@ function generatePlan(rawInputs, options = {}) {
   const photoList = buildPhotoList(inputs, pillar, scenes);
   const caption = buildCaption(inputs, pillar, script.hook);
   const targetFit = buildTargetFit(inputs, pillar, script, adjustments);
-  const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist, adjustments);
+  const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist, photoList, adjustments);
   const editTimeline = buildEditTimeline(inputs, pillar, script, videoChecklist, photoList);
   const songSuggestions = buildSongSuggestions(inputs, pillar);
   const now = new Date();
@@ -605,6 +648,7 @@ function renderPlan(plan) {
         <div class="meta-pill"><span>Mood</span><strong>${escapeHtml(plan.inputs.mood)}</strong></div>
         <div class="meta-pill"><span>Pillar</span><strong>${escapeHtml(plan.pillar)}</strong></div>
         <div class="meta-pill"><span>Length</span><strong>${escapeHtml(plan.inputs.videoLength || 45)} sec</strong></div>
+        <div class="meta-pill"><span>Balance</span><strong>${escapeHtml(captureLabel(plan.inputs.captureBalance))}</strong></div>
         <div class="meta-pill"><span>Energy</span><strong>${escapeHtml(plan.inputs.energy)}</strong></div>
       </div>
       <p class="helper-text"><strong>Shot rule:</strong> one place shot, one human detail, one texture, one story object, one quiet ending. No repeated coffee/table/door shots unless they serve different moments.</p>
@@ -622,6 +666,7 @@ function renderPlan(plan) {
       <p><strong>Read direction:</strong> ${escapeHtml(plan.script.moodInstruction)}</p>
     </article>
 
+    ${(plan.videoChecklist || []).length ? `
     <article class="output-card shoot-card">
       <p class="kicker">3 · Video checklist</p>
       <p class="helper-text">Shoot these in order. Each clip has a different job so the video does not become repetitive.</p>
@@ -632,23 +677,24 @@ function renderPlan(plan) {
             <span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.duration)}</strong><br>${escapeHtml(item.shot)}<br><em>${escapeHtml(item.why)}</em></span>
           </label>`).join('')}
       </div>
-    </article>
+    </article>` : ''}
 
+    ${(plan.photoList || []).length ? `
     <article class="output-card">
-      <p class="kicker">4 · Photos to take</p>
-      <p class="helper-text">These support TikTok covers, Stories, carousels, and memory archive.</p>
+      <p class="kicker">${(plan.videoChecklist || []).length ? '4' : '3'} · Photos to take</p>
+      <p class="helper-text">These support covers, Stories, carousels, and memory archive.</p>
       <div class="checklist">
-        ${plan.photoList.map((item, index) => `
+        ${(plan.photoList || []).map((item, index) => `
           <label class="check-item" data-check="photo-${index}">
             <input type="checkbox" />
             <span>${escapeHtml(item)}</span>
           </label>`).join('')}
       </div>
-    </article>
+    </article>` : ''}
 
     <article class="output-card edit-card timeline-card">
       <p class="kicker">5 · Shot-by-shot edit timeline</p>
-      <p class="helper-text">Place the videos/photos sequentially in this order. Each row shows the matching script line, duration, transition, effect, sound, and optional photo insert.</p>
+      <p class="helper-text">Place the selected videos or photos sequentially in this order. Each row shows the matching script line, duration, transition, effect, sound, and optional insert.</p>
       <div class="timeline-list">
         ${(plan.editTimeline || []).map((item, index) => `
           <label class="timeline-item" data-check="timeline-${index}">
@@ -924,6 +970,7 @@ $('#loadSampleBtn').addEventListener('click', () => {
     energy: 'Medium',
     timeOfDay: 'Morning',
     videoLength: 45,
+    captureBalance: 'mostly-video',
     filmedOnce: 'No',
     audienceFocus: 'filipina45',
     pillar: 'auto',

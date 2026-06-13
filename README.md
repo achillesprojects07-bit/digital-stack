@@ -1,4 +1,4 @@
-# Content Compass V1.8 — Blue Soulful Anywhere Director
+# Content Compass V1.9 — Blue Soulful Balance Dropdown
 
 A GitHub Pages PWA for Aileen's social media content planning.
 
@@ -18,7 +18,7 @@ You enter the basic reality of the day: location, activity, mood, energy, time o
 - Saves inputs and plans locally in the browser with localStorage.
 - Works offline after the first successful load through a service worker.
 
-## V1.8 updates
+## Earlier updates
 
 - Added **Improve this plan** controls after the generated output.
 - Added expert content-director buttons: Stronger hook, Clearer story, More visual, Less talky, More soulful not dramatic, More relatable to women 45+, More elegant, and No face today.
@@ -50,15 +50,14 @@ The woman is the center. The place supports the story.
 - When Firebase is added later, saved plans can sync across phone and MacBook.
 
 
-## V1.8 update
+## Earlier call-sheet update
 - Reordered the output into a clear call-sheet flow: summary, hook, script, video checklist, photos, easy edit, caption.
 - Moved audience fit and scene map into collapsible sections.
 - Moved revision controls to the bottom so the plan is visible before improvements.
 - Simplified the editing guide for easier CapCut use.
 
 
-## V1.8 Update
-- Added a shot-by-shot edit timeline.
-- Each shot now includes matching script line, duration, media placement, transition, effect/color, sound effect, and optional photo insert.
-- Added song search suggestions for CapCut/TikTok music.
-- Copy/export now includes the timeline.
+## V1.9 update
+- Added a Video / Photo Balance dropdown: 100% video, mostly video, balanced, mostly photos, or 100% photos.
+- The checklist and edit timeline now adapt to the selected balance.
+- Photo-only days hide the video checklist; video-only days hide the photo checklist.
