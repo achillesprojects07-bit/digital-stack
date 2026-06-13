@@ -26,3 +26,6 @@ A GitHub Pages PWA for Aileen's social media content planning.
 - This is GitHub-only V1. Data is saved on the current device only.
 - Firebase sync is intentionally not included yet.
 - When Firebase is added later, saved plans can sync across phone and MacBook.
+
+
+V1.0 blue theme update: updated the app colors, browser theme color, and SVG icon to a blue palette.

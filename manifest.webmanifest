@@ -4,8 +4,8 @@
   "description": "A script-first daily content director for TikTok, Reels, and photo capture.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8f1e8",
-  "theme_color": "#2f241f",
+  "background_color": "#eef5ff",
+  "theme_color": "#10233f",
   "icons": [
     {
       "src": "icon.svg",
