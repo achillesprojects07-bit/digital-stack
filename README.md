@@ -1,4 +1,4 @@
-# Content Compass V1.5 — Blue Soulful Anywhere
+# Content Compass V1.6 — Blue Soulful Anywhere Director
 
 A GitHub Pages PWA for Aileen's social media content planning.
 
@@ -9,22 +9,23 @@ You enter the basic reality of the day: location, activity, mood, energy, time o
 ## What it does
 
 - Works for any location: Greece, Manila, La Union, airports, events, cafés, clinics, home days, beaches, road trips, restaurants, hotel rooms, or ordinary errands.
-- Lets you enter any target video length from 15–90 seconds.
+- Lets you enter any target video length from 15–90 seconds, including 15 seconds.
 - Generates a script-first TikTok/Reels plan.
 - Builds a non-redundant video checklist with a different purpose for every shot.
 - Creates photo shots, caption, hashtags, thumbnail direction, and simple CapCut instructions.
-- Adds controls to try another version or make the plan more soulful.
+- Includes expert revision controls after generation so you can improve a plan instead of starting over.
 - Includes date filters in the archive.
 - Saves inputs and plans locally in the browser with localStorage.
 - Works offline after the first successful load through a service worker.
 
-## V1.5 updates
+## V1.6 updates
 
-- Changed the app from Greece-centered to anywhere-centered.
-- Renamed the pillar from Ordinary Greece to Ordinary Life.
-- Removed Greece-only captions, hashtags, and scene logic.
-- Kept Greece as one possible place, not the whole app identity.
-- Updated sample location to a generic neighborhood café.
+- Added **Improve this plan** controls after the generated output.
+- Added expert content-director buttons: Stronger hook, Clearer story, More visual, Less talky, More soulful not dramatic, More relatable to women 45+, More elegant, and No face today.
+- Added a free-text revision note box.
+- Added **Revise plan** so the app keeps your location, mood, activity, and length but rewrites the script, scenes, checklist, photos, and edit brief.
+- Added revision numbering so revised plans show as version 2, version 3, etc.
+- Improved no-face logic so the app uses hands, back view, silhouettes, reflections, objects, and walking shots.
 
 ## Writing direction
 

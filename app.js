@@ -1,7 +1,7 @@
-const VERSION = 'V1.5';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.5';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.5';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.5';
+const VERSION = 'V1.6';
+const STORAGE_INPUTS = 'contentCompass.inputs.v1.6';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.6';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v1.6';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -165,18 +165,59 @@ const angleLines = {
   'simple-day': 'Treat the ordinary day as worthy without making it dramatic.'
 };
 
+const adjustmentLabels = {
+  'stronger-hook': 'Stronger hook',
+  'clearer-story': 'Clearer story',
+  'more-visual': 'More visual',
+  'less-talky': 'Less talky',
+  'soulful-not-dramatic': 'More soulful, not dramatic',
+  'women45': 'More relatable to women 45+',
+  'more-elegant': 'More elegant',
+  'no-face': 'No face today'
+};
+
+const adjustmentDirectives = {
+  'stronger-hook': 'Make the first line more immediate and scroll-stopping, but still soulful.',
+  'clearer-story': 'Make the story easier to understand: one location, one feeling, one reason it matters.',
+  'more-visual': 'Reduce abstract language and make the scenes stronger and more filmable.',
+  'less-talky': 'Use fewer words. Let the images do more emotional work.',
+  'soulful-not-dramatic': 'Add soul, warmth, and depth without sounding heavy or theatrical.',
+  'women45': 'Make the emotional truth more relatable to women 45+ without using cliché midlife language.',
+  'more-elegant': 'Make the language refined, restrained, and graceful.',
+  'no-face': 'Do not require face shots. Use hands, back view, silhouette, objects, walking, and reflected presence.'
+};
+
+function getAdjustmentLabels(adjustments = []) {
+  return adjustments.map(key => adjustmentLabels[key] || key);
+}
+
+function revisionInstruction(adjustments = [], notes = '') {
+  const parts = adjustments.map(key => adjustmentDirectives[key]).filter(Boolean);
+  if (notes) parts.push(`User note: ${notes}`);
+  return parts.length ? parts.join(' ') : '';
+}
+
+
 function avoidNote(inputs) {
   if (!inputs.avoid) return '';
   return ` Avoid: ${inputs.avoid}.`;
 }
 
-function buildScript(inputs, pillar, variant = 0, toneMode = 'balanced') {
+function buildScript(inputs, pillar, variant = 0, toneMode = 'balanced', adjustments = [], revisionNotes = '') {
   const copy = pillarCopy[pillar];
   const seed = `${inputs.location}-${inputs.activity}-${inputs.mood}-${inputs.timeOfDay}-${inputs.angle || 'auto'}`;
-  const hook = pick(copy.hook, seed, variant);
+  const strongHooks = [
+    'This moment stayed with me.',
+    'I almost missed this.',
+    'This is the part I remember.',
+    'The day softened here.',
+    'Something quiet happened here.'
+  ];
+  const hook = adjustments.includes('stronger-hook') ? pick(strongHooks, seed, variant) : pick(copy.hook, seed, variant);
   const activity = cleanActivity(inputs.activity).toLowerCase();
   const location = inputs.location;
-  const moodInstruction = `${moodLines[inputs.mood] || moodLines.Observant} ${angleLines[inputs.angle || 'auto'] || angleLines.auto}${avoidNote(inputs)}`;
+  const adjustText = revisionInstruction(adjustments, revisionNotes);
+  const moodInstruction = `${moodLines[inputs.mood] || moodLines.Observant} ${angleLines[inputs.angle || 'auto'] || angleLines.auto}${avoidNote(inputs)} ${adjustText}`.trim();
   const sensory = sensoryPhrase(pillar, inputs, variant);
   const reflection = reflectionLine(pillar, inputs, variant, toneMode);
 
@@ -230,10 +271,13 @@ function reflectionLine(pillar, inputs, variant = 0, toneMode = 'balanced') {
 
 function buildScenes(inputs, pillar, script) {
   const location = inputs.location;
-  const canFilm = inputs.filmedOnce === 'Yes';
-  const genericSelf = canFilm
-    ? `One 4-second shot someone takes of you walking into or through ${location}. Frame from behind or side, vertical, no posing.`
-    : `Self-shot only: phone chest-height, slow walking clip, or a hand/coffee/notebook detail.`;
+  const noFace = Boolean(inputs.noFace);
+  const canFilm = inputs.filmedOnce === 'Yes' && !noFace;
+  const genericSelf = noFace
+    ? `No face: film hands, walking feet, back view, silhouette, reflection without clear face, or a meaningful object at ${location}.`
+    : canFilm
+      ? `One 4-second shot someone takes of you walking into or through ${location}. Frame from behind or side, vertical, no posing.`
+      : `Self-shot only: phone chest-height, slow walking clip, or a hand/coffee/notebook detail.`;
   const sceneBank = {
     'The Woman': [
       ['Hook visual', genericSelf, 'Cover photo: you from side or back, with negative space for text.'],
@@ -306,7 +350,9 @@ function buildVideoChecklist(inputs, pillar, scenes = []) {
   const push = (job, shot, why, duration = baseDur) => chosen.push({ job, shot, why, duration });
 
   push('Hook / first frame', scenes[0]?.video || `First view of ${inputs.location}. Hold steady.`, 'Shows the audience where the feeling begins.');
-  if (inputs.filmedOnce === 'Yes') {
+  if (inputs.noFace) {
+    push('Human presence without face', 'Hands, back view, walking feet, silhouette, reflection without clear face, bag, notebook, cup, or fabric moving naturally.', 'Keeps you present while respecting a no-face day.');
+  } else if (inputs.filmedOnce === 'Yes') {
     push('Human presence', `Ask for one clean vertical shot of you entering, walking, sitting, or looking toward the scene at ${inputs.location}. No posing.`, 'The target audience needs to see the woman at the center, not only the place.');
   } else {
     push('Human presence', 'Self-shot: hand, walking feet, side reflection, bag, notebook, sunglasses, or coffee held naturally.', 'Adds intimacy without needing someone else to film you.');
@@ -321,14 +367,15 @@ function buildVideoChecklist(inputs, pillar, scenes = []) {
   if (pillar === 'Food') push('Food proof', 'One clear clip of the food being served, touched, broken, poured, or shared — not five similar plate shots.', 'Food must feel warm and human, not like a menu review.');
   if (pillar === 'Sea & Stillness') push('Breathing room', 'One wide sea/sky/water clip with no talking and no fast movement.', 'This pillar needs space and stillness.');
   if (pillar === 'On the Road') push('Transition proof', 'Window, bag, shoes, sign, key, or first view after arrival.', 'Makes the movement understandable.');
-  if (pillar === 'The Woman') push('Face or silhouette', 'One natural glimpse of your face, side profile, mirror, or silhouette.', 'The audience connects to your presence.');
+  if (pillar === 'The Woman' && !inputs.noFace) push('Face or silhouette', 'One natural glimpse of your face, side profile, mirror, or silhouette.', 'The audience connects to your presence.');
+  if (inputs.noFace) push('No-face presence', 'One beautiful no-face proof of you: hands, back view, shadow, reflection, shoes walking, or your object in the scene.', 'Presence does not always require showing your face.');
   if (pillar === 'Small Things') push('Pattern detail', 'Create a tiny sequence: object → light → hand → stillness.', 'Small things need visual rhythm.');
   if (pillar === 'Ordinary Life') push('Local rhythm', 'One ordinary local detail: chair, window, counter, pavement, sign, hallway, voices, receipt, table, or coffee cup.', 'Keeps the place real, not staged.');
 
   return chosen.slice(0, shotCount).map((item, index) => ({ ...item, number: index + 1 }));
 }
 
-function buildTargetFit(inputs, pillar, script) {
+function buildTargetFit(inputs, pillar, script, adjustments = []) {
   const focusMap = {
     filipina45: 'Filipino women 45–65 who respond to soul, confidence, food, place, memory, and a woman who is not trying too hard.',
     daughters: 'Daughters who may send the video to their mothers because it feels tender, dignified, and familiar.',
@@ -344,6 +391,9 @@ function buildTargetFit(inputs, pillar, script) {
     'No lecture: the ending should leave a feeling, not teach a lesson.',
     'Filipina warmth remains present: food, family memory, grace, humor, or lived experience without oversharing.'
   ];
+  if (adjustments.includes('more-visual')) checks.push('Director revision: visuals carry the story before the caption does.');
+  if (adjustments.includes('less-talky')) checks.push('Director revision: fewer words, more breathing room.');
+  if (adjustments.includes('no-face')) checks.push('Director revision: no-face presence is handled through hands, silhouette, movement, and objects.');
   return {
     score: 90,
     audience: focusMap[inputs.audienceFocus] || focusMap.filipina45,
@@ -392,7 +442,7 @@ function buildCaption(inputs, pillar, hook) {
   return `${captions[pillar]} ${tagMap[pillar]}`;
 }
 
-function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = []) {
+function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = [], adjustments = []) {
   const target = normalizeTargetLength(inputs.videoLength);
   const profile = timingProfile(target);
   const clipCount = videoChecklist.length || profile.shots;
@@ -408,32 +458,62 @@ function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = []) {
     'Text overlays: maximum 3 only — hook, one emotional line, final soft landing. Do not cover the whole video with text.',
     'Sound: soft instrumental or natural ambient sound. Keep music low at 8–12% under the voice. Avoid songs with loud lyrics.',
     'Cutting rule: if two clips show the same thing, keep only the one with more feeling, movement, or light.',
+    ...(adjustments.includes('more-visual') ? ['Director note: choose clips with movement, layers, and emotion over static pretty shots.'] : []),
+    ...(adjustments.includes('less-talky') ? ['Director note: leave 1–2 seconds of natural sound or silence before the final line.'] : []),
+    ...(adjustments.includes('no-face') ? ['Director note: do not use face footage. Let hands, back view, reflections, and objects carry presence.'] : []),
     `Thumbnail: use the clearest cover photo with negative space and this short text: “${script.hook}”`,
     `Light note: ${timeNotes[inputs.timeOfDay]}`
   ];
 }
 
-function generatePlan(inputs, options = {}) {
+function generatePlan(rawInputs, options = {}) {
+  const adjustments = options.adjustments || [];
+  const revisionNotes = options.revisionNotes || '';
+  const inputs = adjustments.includes('no-face') ? { ...rawInputs, noFace: true, filmedOnce: 'No' } : { ...rawInputs, noFace: false };
   const pillar = inferPillar(inputs);
   const variant = options.variant ?? 0;
-  const toneMode = options.toneMode || 'balanced';
-  const script = buildScript(inputs, pillar, variant, toneMode);
+  const toneMode = options.toneMode || (adjustments.includes('soulful-not-dramatic') ? 'soulful' : 'balanced');
+  const script = buildScript(inputs, pillar, variant, toneMode, adjustments, revisionNotes);
   const scenes = buildScenes(inputs, pillar, script);
   const videoChecklist = buildVideoChecklist(inputs, pillar, scenes);
   const photoList = buildPhotoList(inputs, pillar, scenes);
   const caption = buildCaption(inputs, pillar, script.hook);
-  const targetFit = buildTargetFit(inputs, pillar, script);
-  const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist);
+  const targetFit = buildTargetFit(inputs, pillar, script, adjustments);
+  const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist, adjustments);
   const now = new Date();
-  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, videoChecklist, photoList, caption, targetFit, editBrief, variant, toneMode };
+  const revisionNumber = options.revisionNumber || 1;
+  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), parentId: options.parentId || null, revisionNumber, inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, videoChecklist, photoList, caption, targetFit, editBrief, variant, toneMode, adjustments, revisionNotes };
 }
 
 function renderPlan(plan) {
   PLAN_OUTPUT.innerHTML = `
     <article class="output-card plan-rules">
       <p class="kicker">Plan controls</p>
-      <p><strong>Not feeling this version?</strong> Use “Try another version” or change the story angle above and generate again. The scenes follow the script, so every video and photo has a job.</p>
+      <p><strong>Current version:</strong> Revision ${escapeHtml(plan.revisionNumber || 1)} ${plan.adjustments?.length ? '· ' + escapeHtml(getAdjustmentLabels(plan.adjustments).join(', ')) : ''}</p>
+      <p><strong>Not feeling this version?</strong> Use the expert revision controls below. The app will keep your original location, mood, activity, and target length, then improve the story, scenes, shots, photos, and editing brief.</p>
       <p><strong>Shot rule:</strong> one place shot, one human detail, one texture, one story object, one quiet ending. No repeated coffee/table/door shots unless they serve different moments.</p>
+    </article>
+
+    <article class="output-card revision-tools">
+      <p class="kicker">Improve this plan</p>
+      <p class="revision-note">Choose what feels wrong. These are content-director fixes, not random tone buttons.</p>
+      <div class="adjustment-grid" id="adjustmentGrid">
+        <button class="adjustment-chip" type="button" data-adjust="stronger-hook">Stronger hook</button>
+        <button class="adjustment-chip" type="button" data-adjust="clearer-story">Clearer story</button>
+        <button class="adjustment-chip" type="button" data-adjust="more-visual">More visual</button>
+        <button class="adjustment-chip" type="button" data-adjust="less-talky">Less talky</button>
+        <button class="adjustment-chip" type="button" data-adjust="soulful-not-dramatic">More soulful, not dramatic</button>
+        <button class="adjustment-chip" type="button" data-adjust="women45">More relatable to women 45+</button>
+        <button class="adjustment-chip" type="button" data-adjust="more-elegant">More elegant</button>
+        <button class="adjustment-chip" type="button" data-adjust="no-face">No face today</button>
+      </div>
+      <div class="revision-box">
+        <label>
+          Your notes for improvement
+          <textarea id="revisionNotes" rows="3" placeholder="e.g., less emotional, more food, no age today, make it 15-sec friendly, use this line..."></textarea>
+        </label>
+        <button class="primary-btn" id="revisePlanBtn" type="button">Revise plan</button>
+      </div>
     </article>
 
     <article class="output-card highlight">
@@ -444,6 +524,7 @@ function renderPlan(plan) {
         <div class="meta-pill"><span>Mood</span><strong>${escapeHtml(plan.inputs.mood)}</strong></div>
         <div class="meta-pill"><span>Pillar</span><strong>${escapeHtml(plan.pillar)}</strong></div>
         <div class="meta-pill"><span>Length</span><strong>${escapeHtml(plan.inputs.videoLength || 45)} sec</strong></div>
+        <div class="meta-pill"><span>Revision</span><strong>${escapeHtml(plan.revisionNumber || 1)}</strong></div>
         <div class="meta-pill"><span>Energy</span><strong>${escapeHtml(plan.inputs.energy)}</strong></div>
       </div>
     </article>
@@ -529,6 +610,7 @@ function renderPlan(plan) {
   OUTPUT.scrollIntoView({ behavior: 'smooth', block: 'start' });
   localStorage.setItem(STORAGE_CURRENT_PLAN, JSON.stringify(plan));
   wireChecks();
+  wireRevisionControls(plan);
 }
 
 function wireChecks() {
@@ -536,6 +618,40 @@ function wireChecks() {
     input.addEventListener('change', e => {
       e.target.closest('.check-item').classList.toggle('done', e.target.checked);
     });
+  });
+}
+
+
+function wireRevisionControls(plan) {
+  const selected = new Set(plan.adjustments || []);
+  $$('.adjustment-chip').forEach(btn => {
+    if (selected.has(btn.dataset.adjust)) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('active');
+    });
+  });
+  const reviseBtn = $('#revisePlanBtn');
+  if (!reviseBtn) return;
+  reviseBtn.addEventListener('click', () => {
+    const current = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null') || plan;
+    const adjustments = $$('.adjustment-chip.active').map(btn => btn.dataset.adjust);
+    const revisionNotes = $('#revisionNotes')?.value.trim() || '';
+    if (!adjustments.length && !revisionNotes) {
+      showToast('Choose at least one fix or add a note.');
+      return;
+    }
+    const cleanInputs = { ...current.inputs };
+    delete cleanInputs.noFace;
+    const revised = generatePlan(cleanInputs, {
+      variant: ((current.variant || 0) + 1) % 5,
+      toneMode: adjustments.includes('soulful-not-dramatic') ? 'soulful' : current.toneMode,
+      adjustments,
+      revisionNotes,
+      parentId: current.parentId || current.id,
+      revisionNumber: (current.revisionNumber || 1) + 1
+    });
+    renderPlan(revised);
+    showToast(`Revised plan created: version ${revised.revisionNumber}.`);
   });
 }
 
@@ -635,14 +751,6 @@ $('#tryAgainBtn').addEventListener('click', () => {
   const nextVariant = ((current?.variant || 0) + 1) % 5;
   renderPlan(generatePlan(inputs, { variant: nextVariant, toneMode: current?.toneMode || 'balanced' }));
   showToast('Generated another version.');
-});
-
-$('#softerBtn').addEventListener('click', () => {
-  const current = JSON.parse(localStorage.getItem(STORAGE_CURRENT_PLAN) || 'null');
-  const inputs = current?.inputs || getInputs();
-  if (!inputs.location || !inputs.activity) return showToast('Add location and activity first.');
-  renderPlan(generatePlan(inputs, { variant: ((current?.variant || 0) + 1) % 5, toneMode: 'soulful' }));
-  showToast('Made it more soulful.');
 });
 
 $('#filterArchiveBtn').addEventListener('click', renderArchive);
