@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Content Compass</title>
+  <meta name="description" content="Content Compass — a script-first daily content director for TikTok, Reels, and photo capture." />
+  <meta name="theme-color" content="#2f241f" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="topline">
+        <span class="brand-dot"></span>
+        <span class="version">V1.0</span>
+      </div>
+      <p class="eyebrow">Aging Powerfully</p>
+      <h1>Content Compass</h1>
+      <p class="subtitle">Tell me where you are. I’ll write the story, then build the scenes.</p>
+    </header>
+
+    <main>
+      <section class="panel dashboard" aria-labelledby="dash-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow small">Today</p>
+            <h2 id="dash-title">Daily Content Director</h2>
+          </div>
+          <button class="ghost-btn" id="loadSampleBtn" type="button">Sample day</button>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card">
+            <span class="dash-label">Mode</span>
+            <strong>Script first</strong>
+            <p>Script → scenes → shots → edit brief.</p>
+          </div>
+          <div class="dash-card">
+            <span class="dash-label">Default privacy</span>
+            <strong>Public-safe</strong>
+            <p>The focus is what you notice.</p>
+          </div>
+          <div class="dash-card">
+            <span class="dash-label">Output</span>
+            <strong>One TikTok story</strong>
+            <p>Plus photo list and CapCut plan.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="input-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow small">Input</p>
+            <h2 id="input-title">What chapter are you editing today?</h2>
+          </div>
+        </div>
+
+        <form id="directorForm" class="director-form">
+          <label>
+            Location
+            <input id="location" name="location" type="text" placeholder="e.g., Halandri café, Assos beach house, Athens street" required />
+          </label>
+
+          <label>
+            Activity / rough schedule
+            <textarea id="activity" name="activity" rows="3" placeholder="e.g., coffee, walk, market, lunch, beach, journaling, drive" required></textarea>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              Mood for today
+              <select id="mood" name="mood">
+                <option>Quiet</option>
+                <option>Witty</option>
+                <option>Observant</option>
+                <option>Elegant</option>
+                <option>Tired but showing up</option>
+                <option>Soft</option>
+                <option>Bold</option>
+                <option>Restless</option>
+                <option>Hungry</option>
+                <option>In transit</option>
+                <option>Slightly dramatic but pretending not to be</option>
+              </select>
+            </label>
+
+            <label>
+              Energy level
+              <select id="energy" name="energy">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Time of day
+              <select id="timeOfDay" name="timeOfDay">
+                <option>Morning</option>
+                <option>Midday</option>
+                <option>Afternoon</option>
+                <option>Golden hour</option>
+                <option>Evening</option>
+                <option>Night</option>
+              </select>
+            </label>
+
+            <label>
+              Can someone film you once?
+              <select id="filmedOnce" name="filmedOnce">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Content pillar
+            <select id="pillar" name="pillar">
+              <option value="auto">Auto-suggest</option>
+              <option>The Woman</option>
+              <option>Ordinary Greece</option>
+              <option>Sea & Stillness</option>
+              <option>Food</option>
+              <option>Small Things</option>
+              <option>On the Road</option>
+            </select>
+          </label>
+
+          <div class="button-row sticky-actions">
+            <button class="primary-btn" type="submit">Generate my story + scenes</button>
+            <button class="secondary-btn" id="saveInputsBtn" type="button">Save inputs</button>
+            <button class="danger-btn" id="resetBtn" type="button">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel output-panel hidden" id="outputPanel" aria-live="polite">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow small">Output</p>
+            <h2>Your daily content plan</h2>
+          </div>
+          <div class="button-row compact">
+            <button class="ghost-btn" id="copyPlanBtn" type="button">Copy all</button>
+            <button class="ghost-btn" id="savePlanBtn" type="button">Save plan</button>
+          </div>
+        </div>
+
+        <div id="planOutput"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="archive-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow small">Archive</p>
+            <h2 id="archive-title">Saved plans</h2>
+          </div>
+          <button class="ghost-btn" id="clearArchiveBtn" type="button">Clear archive</button>
+        </div>
+        <div id="archiveList" class="archive-list empty-state">No saved plans yet.</div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
