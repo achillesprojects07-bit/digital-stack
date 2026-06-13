@@ -1,7 +1,7 @@
-const VERSION = 'V1.7';
-const STORAGE_INPUTS = 'contentCompass.inputs.v1.7';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.7';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v1.7';
+const VERSION = 'V1.8';
+const STORAGE_INPUTS = 'contentCompass.inputs.v1.8';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v1.8';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v1.8';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -448,20 +448,123 @@ function buildEditBrief(inputs, pillar, script, scenes, videoChecklist = [], adj
   const clipCount = videoChecklist.length || profile.shots;
   const voiceWords = profile.words;
   return [
-    `Set the project to about ${target} seconds.`,
-    `Use ${clipCount} clips. Keep most clips around ${profile.dur}.`,
-    `Start with the strongest visual and add this hook as text: “${script.hook}”`,
-    'Put the clips in this order: place → human presence → sensory detail → movement → quiet ending.',
-    `Record or add the voiceover. Keep it around ${voiceWords} words or less.`,
-    'Use only 1–3 text overlays. Do not cover every clip with words.',
-    'Keep music very low under the voice, around 8–12%. Natural sound is also okay.',
-    'Remove duplicate clips. If two clips show the same thing, keep the one with better light or feeling.',
+    `Create a ${target}-second vertical project. Import the clips in the exact sequence shown in the edit timeline below.`,
+    `Trim to ${clipCount} strong shots. Most clips should be around ${profile.dur}; cut sooner if the frame stops saying something.`,
+    `Place the hook text on Shot 1 only: “${script.hook}”. Keep it readable for the first 1.5 seconds.`,
+    'Use soft cuts for emotional continuity. Use a gentle crossfade only when the feeling moves from place to memory or from movement to stillness.',
+    `Record the voiceover after arranging the clips. Keep it around ${voiceWords} words or less and match each line to the shot shown in the timeline.`,
+    'Keep music very low under the voice, around 8–12%. Let natural sound breathe between lines when possible.',
+    'Use only 1–3 text overlays: hook, one short memory line, and optional final line. Do not caption every sentence.',
+    'Remove duplicate clips. If two clips show the same table, coffee, door, sea, or street angle, keep the one with better light or stronger feeling.',
     ...(adjustments.includes('more-visual') ? ['Revision note: let the visuals carry more of the story before adding more words.'] : []),
     ...(adjustments.includes('less-talky') ? ['Revision note: leave one quiet pause before the final line.'] : []),
     ...(adjustments.includes('no-face') ? ['Revision note: use hands, back view, reflection, shadow, or objects instead of face footage.'] : []),
     `Thumbnail: use the cleanest cover photo and this short text: “${script.hook}”`,
     `Light note: ${timeNotes[inputs.timeOfDay]}`
   ];
+}
+
+function splitScriptLines(script) {
+  return (script.body || '')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+}
+
+function distributeLines(lines, count) {
+  if (!count) return [];
+  const usable = lines.length ? lines : ['Let the visuals carry this moment.'];
+  return Array.from({ length: count }, (_, index) => {
+    if (index === 0) return usable[0] || '';
+    const mapped = usable[Math.min(index, usable.length - 1)] || '';
+    return mapped;
+  });
+}
+
+function formatTime(seconds) {
+  const safe = Math.max(0, Math.round(seconds * 10) / 10);
+  return `${safe.toFixed(safe % 1 === 0 ? 0 : 1)}s`;
+}
+
+function editTransitionFor(index, total, pillar) {
+  if (index === 0) return 'Start clean. No intro animation.';
+  if (index === total - 1) return 'Soft fade out or hold to black for the last beat.';
+  if (pillar === 'Food') return index % 2 ? 'Soft cut on hand/food movement.' : 'Gentle 0.3s crossfade if the frame feels warm.';
+  if (pillar === 'Sea & Stillness') return 'Gentle 0.4s crossfade; keep it slow.';
+  if (pillar === 'On the Road') return index % 2 ? 'Cut on movement.' : 'Quick dissolve from motion to arrival.';
+  if (pillar === 'Small Things') return 'Soft cut; match similar shapes, light, or texture.';
+  return 'Soft cut. Avoid flashy transitions.';
+}
+
+function editEffectFor(index, pillar, mood) {
+  const base = 'Natural color, slightly warm, no heavy filter.';
+  if (pillar === 'Food') return index === 0 ? 'Warm food tone; keep highlights soft.' : 'Slight warmth and gentle contrast.';
+  if (pillar === 'Sea & Stillness') return 'Lower contrast, soft highlights, let blues/air stay natural.';
+  if (pillar === 'The Woman') return 'Soft skin-friendly light; avoid over-sharpening.';
+  if (mood === 'Elegant') return 'Clean, refined grade; avoid trendy effects.';
+  if (mood === 'Quiet' || mood === 'Soft') return 'Soft exposure; keep the frame calm.';
+  return base;
+}
+
+function editSoundEffectFor(index, total, pillar) {
+  if (index === 0) return 'Optional natural ambience under hook: street, room tone, waves, café hum, or soft plate sound.';
+  if (index === total - 1) return 'Let natural sound breathe for the ending; no loud sting.';
+  const map = {
+    'Food': ['soft cup/plate sound', 'fork touch', 'bread tear', 'café ambience'],
+    'Sea & Stillness': ['wave sound', 'soft wind', 'cloth movement', 'quiet room tone'],
+    'On the Road': ['car/road hum', 'bag zip', 'footsteps', 'door/arrival sound'],
+    'Small Things': ['soft tap', 'fabric rustle', 'page turn', 'ambient room tone'],
+    'Ordinary Life': ['street ambience', 'coffee cup sound', 'footsteps', 'door sound'],
+    'The Woman': ['soft footsteps', 'fabric movement', 'bag detail', 'room tone']
+  };
+  const list = map[pillar] || map['Ordinary Life'];
+  return `Optional: ${list[index % list.length]}. Keep it very low.`;
+}
+
+function buildSongSuggestions(inputs, pillar) {
+  const mood = inputs.mood;
+  const banks = {
+    'Food': ['warm acoustic instrumental', 'soft café jazz instrumental', 'Mediterranean acoustic guitar no lyrics'],
+    'Sea & Stillness': ['soft piano ambient', 'cinematic ocean ambient', 'minimal acoustic instrumental'],
+    'On the Road': ['gentle road trip instrumental', 'soft cinematic travel beat', 'ambient piano with light pulse'],
+    'Small Things': ['minimal piano texture', 'soft lo-fi instrumental no lyrics', 'warm ambient guitar'],
+    'The Woman': ['elegant piano instrumental', 'soulful acoustic instrumental', 'cinematic soft strings no lyrics'],
+    'Ordinary Life': ['warm daily vlog instrumental', 'soft acoustic morning', 'quiet café ambience instrumental']
+  };
+  const base = banks[pillar] || banks['Ordinary Life'];
+  const extra = mood === 'Elegant' ? 'Choose the cleanest, least trendy version.' : mood === 'Quiet' ? 'Choose the most spacious version.' : 'Choose one that does not compete with the voice.';
+  return {
+    searchTerms: base,
+    direction: `${extra} Keep music at 8–12% under voiceover, or 5–8% if the natural sound is beautiful.`
+  };
+}
+
+function buildEditTimeline(inputs, pillar, script, videoChecklist = [], photoList = []) {
+  const target = normalizeTargetLength(inputs.videoLength);
+  const shots = videoChecklist.length ? videoChecklist : [{ job: 'Opening frame', shot: `First visual of ${inputs.location}`, why: 'Establishes the moment.' }];
+  const lines = distributeLines(splitScriptLines(script), shots.length);
+  const rawDur = target / shots.length;
+  let cursor = 0;
+  return shots.map((shot, index) => {
+    const duration = index === shots.length - 1 ? Math.max(1, target - cursor) : Math.max(1, Math.round(rawDur));
+    const start = cursor;
+    const end = Math.min(target, cursor + duration);
+    cursor = end;
+    const photoInsert = photoList[index % Math.max(1, photoList.length)] || 'Optional photo insert only if the video clip is weak.';
+    return {
+      number: index + 1,
+      time: `${formatTime(start)}–${formatTime(end)}`,
+      duration: `${Math.max(1, Math.round(end - start))}s`,
+      media: index === shots.length - 1 ? 'Video or photo ending' : 'Video clip',
+      place: shot.shot,
+      scriptLine: lines[index],
+      textOverlay: index === 0 ? script.hook : (index === shots.length - 1 ? 'Optional final line, very short.' : 'None, unless this line needs emphasis.'),
+      transition: editTransitionFor(index, shots.length, pillar),
+      effect: editEffectFor(index, pillar, inputs.mood),
+      sound: editSoundEffectFor(index, shots.length, pillar),
+      photoInsert
+    };
+  });
 }
 
 function generatePlan(rawInputs, options = {}) {
@@ -478,9 +581,11 @@ function generatePlan(rawInputs, options = {}) {
   const caption = buildCaption(inputs, pillar, script.hook);
   const targetFit = buildTargetFit(inputs, pillar, script, adjustments);
   const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist, adjustments);
+  const editTimeline = buildEditTimeline(inputs, pillar, script, videoChecklist, photoList);
+  const songSuggestions = buildSongSuggestions(inputs, pillar);
   const now = new Date();
   const revisionNumber = options.revisionNumber || 1;
-  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), parentId: options.parentId || null, revisionNumber, inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, videoChecklist, photoList, caption, targetFit, editBrief, variant, toneMode, adjustments, revisionNotes };
+  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), parentId: options.parentId || null, revisionNumber, inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, videoChecklist, photoList, caption, targetFit, editBrief, editTimeline, songSuggestions, variant, toneMode, adjustments, revisionNotes };
 }
 
 function renderPlan(plan) {
@@ -541,9 +646,31 @@ function renderPlan(plan) {
       </div>
     </article>
 
+    <article class="output-card edit-card timeline-card">
+      <p class="kicker">5 · Shot-by-shot edit timeline</p>
+      <p class="helper-text">Place the videos/photos sequentially in this order. Each row shows the matching script line, duration, transition, effect, sound, and optional photo insert.</p>
+      <div class="timeline-list">
+        ${(plan.editTimeline || []).map((item, index) => `
+          <label class="timeline-item" data-check="timeline-${index}">
+            <input type="checkbox" />
+            <span class="timeline-num">${escapeHtml(item.number)}</span>
+            <span class="timeline-body">
+              <strong>${escapeHtml(item.time)} · ${escapeHtml(item.media)} · ${escapeHtml(item.duration)}</strong>
+              <em>Clip/photo:</em> ${escapeHtml(item.place)}
+              <em>Script line:</em> “${escapeHtml(item.scriptLine)}”
+              <em>Text overlay:</em> ${escapeHtml(item.textOverlay)}
+              <em>Transition:</em> ${escapeHtml(item.transition)}
+              <em>Effect/color:</em> ${escapeHtml(item.effect)}
+              <em>Sound effect:</em> ${escapeHtml(item.sound)}
+              <em>Optional photo insert:</em> ${escapeHtml(item.photoInsert)}
+            </span>
+          </label>`).join('')}
+      </div>
+    </article>
+
     <article class="output-card edit-card">
-      <p class="kicker">5 · Easy edit</p>
-      <p class="helper-text">Simple CapCut guide. Follow this only after you have the clips.</p>
+      <p class="kicker">6 · Simple edit notes</p>
+      <p class="helper-text">Use this after the timeline is arranged.</p>
       <div class="numbered-guide">
         ${plan.editBrief.map((item, index) => `
           <label class="check-item" data-check="edit-${index}">
@@ -551,10 +678,14 @@ function renderPlan(plan) {
             <span><strong>${index + 1}.</strong> ${escapeHtml(item)}</span>
           </label>`).join('')}
       </div>
+      <div class="song-box">
+        <p><strong>Song direction:</strong> ${escapeHtml(plan.songSuggestions?.direction || 'Keep music soft under the voice.')}</p>
+        <p><strong>Search in CapCut/TikTok music:</strong> ${(plan.songSuggestions?.searchTerms || []).map(term => `<span class="song-chip">${escapeHtml(term)}</span>`).join('')}</p>
+      </div>
     </article>
 
     <article class="output-card">
-      <p class="kicker">6 · Caption + hashtags</p>
+      <p class="kicker">7 · Caption + hashtags</p>
       <p>${escapeHtml(plan.caption)}</p>
     </article>
 
@@ -667,7 +798,7 @@ function escapeHtml(str) {
 }
 
 function planToText(plan) {
-  return `CONTENT COMPASS ${VERSION}\n\nLOCATION\n${plan.inputs.location}\n\nMOOD\n${plan.inputs.mood}\n\nPILLAR\n${plan.pillar}\n\nSTORY DIRECTION\n${plan.direction}\n\nHOOK\n${plan.script.hook}\n\nVOICEOVER SCRIPT\n${plan.script.body}\n\nSCENES\n${plan.scenes.map(s => `${s.number}. ${s.beat}\nVideo: ${s.video}\nPhoto: ${s.photo}`).join('\n\n')}\n\nPHOTO LIST\n${plan.photoList.map((p,i)=>`${i+1}. ${p}`).join('\n')}\n\nCAPTION\n${plan.caption}\n\nCAPCUT BRIEF\n${plan.editBrief.map((p,i)=>`${i+1}. ${p}`).join('\n')}`;
+  return `CONTENT COMPASS ${VERSION}\n\nLOCATION\n${plan.inputs.location}\n\nMOOD\n${plan.inputs.mood}\n\nPILLAR\n${plan.pillar}\n\nSTORY DIRECTION\n${plan.direction}\n\nHOOK\n${plan.script.hook}\n\nVOICEOVER SCRIPT\n${plan.script.body}\n\nVIDEO CHECKLIST\n${(plan.videoChecklist || []).map(s => `${s.number}. ${s.job} (${s.duration})\n${s.shot}\nWhy: ${s.why}`).join('\n\n')}\n\nSHOT-BY-SHOT EDIT TIMELINE\n${(plan.editTimeline || []).map(s => `${s.number}. ${s.time} · ${s.media} · ${s.duration}\nClip/photo: ${s.place}\nScript line: “${s.scriptLine}”\nText overlay: ${s.textOverlay}\nTransition: ${s.transition}\nEffect/color: ${s.effect}\nSound: ${s.sound}\nOptional photo insert: ${s.photoInsert}`).join('\n\n')}\n\nPHOTO LIST\n${plan.photoList.map((p,i)=>`${i+1}. ${p}`).join('\n')}\n\nSONG SUGGESTIONS\n${(plan.songSuggestions?.searchTerms || []).join(' / ')}\n${plan.songSuggestions?.direction || ''}\n\nCAPTION\n${plan.caption}\n\nSIMPLE EDIT NOTES\n${plan.editBrief.map((p,i)=>`${i+1}. ${p}`).join('\n')}`;
 }
 
 function savePlan(plan) {
