@@ -1,14 +1,15 @@
-const VERSION = 'V2.0';
-const STORAGE_INPUTS = 'contentCompass.inputs.v2.0';
-const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v2.0';
-const STORAGE_ARCHIVE = 'contentCompass.archive.v2.0';
-const STORAGE_QUICK_MODE = 'contentCompass.quickMode.v2.0';
+const VERSION = 'V2.2';
+const STORAGE_INPUTS = 'contentCompass.inputs.v2.2';
+const STORAGE_CURRENT_PLAN = 'contentCompass.currentPlan.v2.2';
+const STORAGE_ARCHIVE = 'contentCompass.archive.v2.2';
+const STORAGE_QUICK_MODE = 'contentCompass.quickMode.v2.2';
 const OLD_KEYS = {
-  inputs: 'contentCompass.inputs.v1.9',
-  current: 'contentCompass.currentPlan.v1.9',
-  archive: 'contentCompass.archive.v1.9'
+  inputs: 'contentCompass.inputs.v2.1',
+  current: 'contentCompass.currentPlan.v2.1',
+  archive: 'contentCompass.archive.v2.1',
+  quick: 'contentCompass.quickMode.v2.1'
 };
-const SESSION_COUNTER_KEY = 'contentCompass.sessionCounter.v2.0';
+const SESSION_COUNTER_KEY = 'contentCompass.sessionCounter.v2.2';
 const todaySeed = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
 if (!sessionStorage.getItem(SESSION_COUNTER_KEY)) sessionStorage.setItem(SESSION_COUNTER_KEY, String(Date.now() % 997));
 
@@ -405,6 +406,92 @@ function buildVideoChecklist(inputs, pillar, scenes = []) {
   return chosen.slice(0, shotCount).map((item, index) => ({ ...item, number: index + 1 }));
 }
 
+function phoneHeightForShot(kind, pillar) {
+  const key = `${pillar}:${kind}`.toLowerCase();
+  if (key.includes('food') || key.includes('close') || key.includes('detail')) return 'just above table or object level';
+  if (key.includes('wide') || key.includes('place')) return 'chest to eye height';
+  if (key.includes('movement') || key.includes('walk')) return 'waist to chest height';
+  if (key.includes('reaction') || key.includes('presence')) return 'chest height, slightly angled';
+  return 'chest height, steady with two hands';
+}
+
+function angleForShot(kind, pillar) {
+  const k = `${pillar}:${kind}`.toLowerCase();
+  if (k.includes('food')) return '45° angle for plates; top shot only if the table is beautiful';
+  if (k.includes('wide') || k.includes('place')) return 'straight vertical frame, slight diagonal if the background is busy';
+  if (k.includes('close') || k.includes('detail')) return 'close but not cramped; leave breathing space';
+  if (k.includes('movement')) return 'locked phone or slow follow; no fast pan';
+  if (k.includes('reaction') || k.includes('presence')) return 'side, back, mirror, shadow, hands, or natural face glance';
+  return 'simple vertical frame with one clear subject';
+}
+
+function textureForShot(kind, pillar) {
+  const banks = {
+    'Food': 'bread, steam, sauce, plate edge, glass, napkin, table grain, hand, warm light',
+    'Sea & Stillness': 'water, sand, stone, towel, wind, curtain, skin, shadow, horizon',
+    'On the Road': 'window, bag, shoes, signs, road lines, seat fabric, ticket, doorway',
+    'Small Things': 'light, shadow, wall, curtain, chair, paper, jewelry, fabric, doorway',
+    'The Woman': 'hands, jewelry, fabric, mirror, notebook, makeup, bag, skin-friendly light',
+    'Ordinary Life': 'street, cup, receipt, pavement, chair, counter, window, market, doorway'
+  };
+  return banks[pillar] || banks['Ordinary Life'];
+}
+
+function mistakeForShot(kind, pillar) {
+  const k = `${pillar}:${kind}`.toLowerCase();
+  if (k.includes('wide') || k.includes('place')) return 'Do not sweep the whole place with a fast pan.';
+  if (k.includes('close') || k.includes('detail') || k.includes('food')) return 'Do not shoot ten versions of the same plate or object.';
+  if (k.includes('movement')) return 'Do not keep recording after the action is finished.';
+  if (k.includes('reaction') || k.includes('presence')) return 'Do not force a pose; natural presence is stronger.';
+  return 'Do not record without one clear subject.';
+}
+
+function learnWhyForShot(kind, pillar) {
+  const k = `${pillar}:${kind}`.toLowerCase();
+  if (k.includes('wide') || k.includes('place') || k.includes('hook')) return 'A wide first frame lets viewers enter the place before they enter the feeling.';
+  if (k.includes('human') || k.includes('presence') || k.includes('reaction')) return 'Human presence gives the video warmth. It does not always need to be your full face.';
+  if (k.includes('detail') || k.includes('close') || k.includes('food')) return 'Close details create intimacy. They make food, light, and objects feel remembered, not just shown.';
+  if (k.includes('movement')) return 'Movement keeps a short video alive without needing more words.';
+  if (k.includes('ending') || k.includes('pause')) return 'A quiet ending gives the audience somewhere to land.';
+  return 'A clear shot has one subject and one purpose. That is what makes editing easier.';
+}
+
+function buildShootCoach(inputs, pillar, videoChecklist = [], photoList = []) {
+  const target = normalizeTargetLength(inputs.videoLength);
+  const capture = captureProfile(inputs.captureBalance);
+  const hasVideo = capture.videoRatio > 0;
+  const profile = timingProfile(target);
+  const videoShotCount = hasVideo ? (videoChecklist.length || profile.shots) : 0;
+  const headline = hasVideo
+    ? `Shoot only ${videoShotCount} video clips for this ${target}-second plan, then stop.`
+    : `Shoot photos only today. Build one clear visual sequence instead of many duplicates.`;
+  const discipline = hasVideo
+    ? `Each clip needs one job: place, human presence, close-up, movement, feeling, or ending. If a clip cannot be named, skip it.`
+    : `Take fewer, stronger photos: cover, place, human presence, detail, texture, ending. If two photos say the same thing, keep one.`;
+  const fiveShotReminder = target <= 20
+    ? 'For 15–20 seconds, use 3–5 shots only. One feeling. No extra scene.'
+    : target <= 30
+      ? 'For 30 seconds, the 5-shot system is the sweet spot.'
+      : 'For longer videos, repeat the 5-shot system only when the story moves to a new scene.';
+  const source = hasVideo ? videoChecklist : photoList.map((p, i) => ({ number: i + 1, job: `Photo ${i + 1}`, shot: p, duration: 'still photo' }));
+  const cards = source.map((item, index) => {
+    const job = item.job || `Shot ${index + 1}`;
+    return {
+      number: item.number || index + 1,
+      job,
+      what: item.shot || item,
+      seconds: item.duration || profile.dur,
+      lens: index === 0 && pillar !== 'Food' ? '1x; use 0.5x only if you need more place context' : '1x; move closer instead of zooming',
+      phoneHeight: phoneHeightForShot(job, pillar),
+      angle: angleForShot(job, pillar),
+      texture: textureForShot(job, pillar),
+      avoid: mistakeForShot(job, pillar),
+      learn: learnWhyForShot(job, pillar)
+    };
+  });
+  return { headline, discipline, fiveShotReminder, cards };
+}
+
 function buildTargetFit(inputs, pillar, script, adjustments = []) {
   const focusMap = {
     filipina45: 'Filipino women 45–65 who respond to soul, confidence, food, place, memory, and a woman who is not trying too hard.',
@@ -621,6 +708,50 @@ function buildEditTimeline(inputs, pillar, script, videoChecklist = [], photoLis
   });
 }
 
+
+function buildIphoneSetup(inputs) {
+  const hasVideo = inputs.captureBalance !== 'photo-only';
+  const hasPhotos = inputs.captureBalance !== 'video-only';
+  const length = Number(inputs.videoLength || 45);
+  const quickModeLine = hasVideo
+    ? `Shoot vertical. Use Video mode, 4K, 30 fps, mostly 1x lens. For a ${length}-second video, stop each clip when its job is done.`
+    : 'Shoot vertical photos. Use Photo mode first. Use Portrait only for people, hands, flowers, coffee, or objects with clean background separation.';
+  const before = [
+    'Clean the iPhone lens.',
+    'Hold the phone vertical.',
+    'Turn Grid on in Camera settings.',
+    'Use 1x lens as your default.',
+    'Tap the subject to focus before shooting.',
+    'Hold still for one second before and after each clip.'
+  ];
+  const video = hasVideo ? [
+    'Mode: Video, vertical orientation.',
+    'Quality: 4K at 30 fps for clean TikTok/Reels footage.',
+    'Lens: 1x for most lifestyle, food, walking, and hands shots.',
+    'Use 0.5x only for wide rooms, streets, beaches, architecture, or table-wide establishing shots.',
+    'Use 2x only for elegant portraits or details when you cannot move closer.',
+    'Avoid Cinematic mode for daily shooting; use it only for one special portrait or quiet face moment.',
+    'Avoid fast panning. A steady frame looks more expensive.',
+    'For food/table shots, tap and hold to lock focus/exposure if the brightness keeps jumping.'
+  ] : [];
+  const photo = hasPhotos ? [
+    'Mode: Photo for most shots; Portrait only when you want soft background blur.',
+    'Take a cover photo with empty space at the top for text.',
+    'For food: take only three useful versions — wide table, 45-degree plate, close detail.',
+    'For yourself: back view, side profile, hand, reflection, or seated moment all count as presence.',
+    'Use 2x for a more elegant portrait/detail look when the light is good.',
+    'Do not take ten versions of the same plate unless the angle or light changes.'
+  ] : [];
+  const mini = [
+    'Subject clear?',
+    'Light okay?',
+    'Phone steady?',
+    'One job for this shot?',
+    'Stop after the clip.'
+  ];
+  return { quickModeLine, before, video, photo, mini };
+}
+
 function generatePlan(rawInputs, options = {}) {
   if (!options.preserveSession) {
     const currentCounter = Number(sessionStorage.getItem(SESSION_COUNTER_KEY) || '0');
@@ -638,12 +769,14 @@ function generatePlan(rawInputs, options = {}) {
   const photoList = buildPhotoList(inputs, pillar, scenes);
   const caption = buildCaption(inputs, pillar, script.hook);
   const targetFit = buildTargetFit(inputs, pillar, script, adjustments);
+  const shootCoach = buildShootCoach(inputs, pillar, videoChecklist, photoList);
+  const iphoneSetup = buildIphoneSetup(inputs);
   const editBrief = buildEditBrief(inputs, pillar, script, scenes, videoChecklist, photoList, adjustments);
   const editTimeline = buildEditTimeline(inputs, pillar, script, videoChecklist, photoList);
   const songSuggestions = buildSongSuggestions(inputs, pillar);
   const now = new Date();
   const revisionNumber = options.revisionNumber || 1;
-  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), parentId: options.parentId || null, revisionNumber, inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, videoChecklist, photoList, caption, targetFit, editBrief, editTimeline, songSuggestions, variant, toneMode, adjustments, revisionNotes };
+  return { id: `plan-${now.getTime()}`, createdAt: now.toISOString(), parentId: options.parentId || null, revisionNumber, inputs, pillar, direction: pillarCopy[pillar].direction, script, scenes, iphoneSetup, shootCoach, videoChecklist, photoList, caption, targetFit, editBrief, editTimeline, songSuggestions, variant, toneMode, adjustments, revisionNotes };
 }
 
 function renderPlan(plan) {
@@ -682,9 +815,49 @@ function renderPlan(plan) {
       <p><strong>Read direction:</strong> ${escapeHtml(plan.script.moodInstruction)}</p>
     </article>
 
+    <details class="output-card collapsible-card iphone-setup-card">
+      <summary>
+        <span><strong>3 · Check before shooting</strong> · iPhone 16 Pro Max setup</span>
+        <span class="summary-hint">Open only if needed</span>
+      </summary>
+      <p class="helper-text strong-help">${escapeHtml(plan.iphoneSetup?.quickModeLine || 'Use your iPhone vertically, keep the frame steady, and shoot only what the story needs.')}</p>
+      <div class="mini-setup-grid">
+        <div class="setup-box">
+          <h4>Fast check</h4>
+          <div class="checklist compact-list">
+            ${(plan.iphoneSetup?.before || []).map((item, index) => `
+              <label class="check-item" data-check="setup-before-${index}"><input type="checkbox" /><span>${escapeHtml(item)}</span></label>`).join('')}
+          </div>
+        </div>
+        ${(plan.iphoneSetup?.video || []).length ? `<div class="setup-box"><h4>Video settings</h4><ul>${plan.iphoneSetup.video.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>` : ''}
+        ${(plan.iphoneSetup?.photo || []).length ? `<div class="setup-box"><h4>Photo settings</h4><ul>${plan.iphoneSetup.photo.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>` : ''}
+      </div>
+      <div class="coach-reminder compact-reminder"><strong>Before every shot:</strong> ${(plan.iphoneSetup?.mini || []).map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>
+    </details>
+
+    <article class="output-card shoot-coach-card">
+      <p class="kicker">4 · iPhone Shoot Coach</p>
+      <h3>${escapeHtml(plan.shootCoach?.headline || 'Shoot only the clips you need, then stop.')}</h3>
+      <p class="helper-text strong-help">${escapeHtml(plan.shootCoach?.discipline || 'Every shot needs one clear job.')}</p>
+      <div class="coach-reminder">${escapeHtml(plan.shootCoach?.fiveShotReminder || 'The 5-shot system adapts to your final video length.')}</div>
+      <div class="coach-grid">
+        ${(plan.shootCoach?.cards || []).map((item, index) => `
+          <details class="coach-card" ${index < 2 ? 'open' : ''}>
+            <summary><span>${escapeHtml(item.number)}. ${escapeHtml(item.job)}</span><strong>${escapeHtml(item.seconds)}</strong></summary>
+            <p><strong>What:</strong> ${escapeHtml(item.what)}</p>
+            <p><strong>Phone:</strong> vertical · ${escapeHtml(item.lens)}</p>
+            <p><strong>Height:</strong> ${escapeHtml(item.phoneHeight)}</p>
+            <p><strong>Angle:</strong> ${escapeHtml(item.angle)}</p>
+            <p><strong>Look for texture:</strong> ${escapeHtml(item.texture)}</p>
+            <p class="avoid-line"><strong>Avoid:</strong> ${escapeHtml(item.avoid)}</p>
+            <p class="learn-line"><strong>Why this works:</strong> ${escapeHtml(item.learn)}</p>
+          </details>`).join('')}
+      </div>
+    </article>
+
     ${(plan.videoChecklist || []).length ? `
     <article class="output-card shoot-card">
-      <p class="kicker">3 · Video checklist</p>
+      <p class="kicker">5 · Video checklist</p>
       <p class="helper-text">Shoot these in order. Each clip has a different job so the video does not become repetitive.</p>
       <div class="checklist">
         ${(plan.videoChecklist || []).map((item, index) => `
@@ -697,7 +870,7 @@ function renderPlan(plan) {
 
     ${(plan.photoList || []).length ? `
     <article class="output-card">
-      <p class="kicker">${(plan.videoChecklist || []).length ? '4' : '3'} · Photos to take</p>
+      <p class="kicker">${(plan.videoChecklist || []).length ? '6' : '5'} · Photos to take</p>
       <p class="helper-text">These support covers, Stories, carousels, and memory archive.</p>
       <div class="checklist">
         ${(plan.photoList || []).map((item, index) => `
@@ -709,7 +882,7 @@ function renderPlan(plan) {
     </article>` : ''}
 
     <article class="output-card edit-card timeline-card">
-      <p class="kicker">5 · Shot-by-shot edit timeline</p>
+      <p class="kicker">7 · Shot-by-shot edit timeline</p>
       <p class="helper-text">Place the selected videos or photos sequentially in this order. Each row shows the matching script line, duration, transition, effect, sound, and optional insert.</p>
       <div class="timeline-list">
         ${(plan.editTimeline || []).map((item, index) => `
@@ -731,7 +904,7 @@ function renderPlan(plan) {
     </article>
 
     <article class="output-card edit-card">
-      <p class="kicker">6 · Simple edit notes</p>
+      <p class="kicker">8 · Simple edit notes</p>
       <p class="helper-text">Use this after the timeline is arranged.</p>
       <div class="numbered-guide">
         ${plan.editBrief.map((item, index) => `
@@ -747,7 +920,7 @@ function renderPlan(plan) {
     </article>
 
     <article class="output-card">
-      <p class="kicker">7 · Caption + hashtags</p>
+      <p class="kicker">9 · Caption + hashtags</p>
       <p>${escapeHtml(plan.caption)}</p>
     </article>
 
@@ -865,7 +1038,8 @@ function escapeHtml(str) {
 }
 
 function planToText(plan) {
-  return `CONTENT COMPASS ${VERSION}\n\nLOCATION\n${plan.inputs.location}\n\nMOOD\n${plan.inputs.mood}\n\nPILLAR\n${plan.pillar}\n\nSTORY DIRECTION\n${plan.direction}\n\nHOOK\n${plan.script.hook}\n\nVOICEOVER SCRIPT\n${plan.script.body}\n\nVIDEO CHECKLIST\n${(plan.videoChecklist || []).map(s => `${s.number}. ${s.job} (${s.duration})\n${s.shot}\nWhy: ${s.why}`).join('\n\n')}\n\nSHOT-BY-SHOT EDIT TIMELINE\n${(plan.editTimeline || []).map(s => `${s.number}. ${s.time} · ${s.media} · ${s.duration}\nClip/photo: ${s.place}\nScript line: “${s.scriptLine}”\nText overlay: ${s.textOverlay}\nTransition: ${s.transition}\nEffect/color: ${s.effect}\nSound: ${s.sound}\nOptional photo insert: ${s.photoInsert}`).join('\n\n')}\n\nPHOTO LIST\n${plan.photoList.map((p,i)=>`${i+1}. ${p}`).join('\n')}\n\nSONG SUGGESTIONS\n${(plan.songSuggestions?.searchTerms || []).join(' / ')}\n${plan.songSuggestions?.direction || ''}\n\nCAPTION\n${plan.caption}\n\nSIMPLE EDIT NOTES\n${plan.editBrief.map((p,i)=>`${i+1}. ${p}`).join('\n')}`;
+  const setup = plan.iphoneSetup || { before: [], video: [], photo: [], mini: [] };
+  return `CONTENT COMPASS ${VERSION}\n\nLOCATION\n${plan.inputs.location}\n\nMOOD\n${plan.inputs.mood}\n\nPILLAR\n${plan.pillar}\n\nSTORY DIRECTION\n${plan.direction}\n\nHOOK\n${plan.script.hook}\n\nVOICEOVER SCRIPT\n${plan.script.body}\n\nIPHONE SETUP\n${setup.quickModeLine || ''}\n\nFast check:\n${(setup.before || []).map((p,i)=>`${i+1}. ${p}`).join('\\n')}\n\nVideo settings:\n${(setup.video || []).map((p,i)=>`${i+1}. ${p}`).join('\\n')}\n\nPhoto settings:\n${(setup.photo || []).map((p,i)=>`${i+1}. ${p}`).join('\\n')}\n\nBefore every shot:\n${(setup.mini || []).join(' · ')}\n\nIPHONE SHOOT COACH\n${(plan.shootCoach?.cards || []).map(s => `${s.number}. ${s.job} (${s.seconds})\nWhat: ${s.what}\nPhone: vertical · ${s.lens}\nHeight: ${s.phoneHeight}\nAngle: ${s.angle}\nTexture: ${s.texture}\nAvoid: ${s.avoid}`).join('\\n\\n')}\n\nVIDEO CHECKLIST\n${(plan.videoChecklist || []).map(s => `${s.number}. ${s.job} (${s.duration})\n${s.shot}\nWhy: ${s.why}`).join('\\n\\n')}\n\nSHOT-BY-SHOT EDIT TIMELINE\n${(plan.editTimeline || []).map(s => `${s.number}. ${s.time} · ${s.media} · ${s.duration}\nClip/photo: ${s.place}\nScript line: “${s.scriptLine}”\nText overlay: ${s.textOverlay}\nTransition: ${s.transition}\nEffect/color: ${s.effect}\nSound: ${s.sound}\nOptional photo insert: ${s.photoInsert}`).join('\\n\\n')}\n\nPHOTO LIST\n${plan.photoList.map((p,i)=>`${i+1}. ${p}`).join('\\n')}\n\nSONG SUGGESTIONS\n${(plan.songSuggestions?.searchTerms || []).join(' / ')}\n${plan.songSuggestions?.direction || ''}\n\nCAPTION\n${plan.caption}\n\nSIMPLE EDIT NOTES\n${plan.editBrief.map((p,i)=>`${i+1}. ${p}`).join('\\n')}`;
 }
 
 function savePlan(plan) {
@@ -936,7 +1110,7 @@ function applyQuickMode(isQuick) {
 }
 
 function migrateStorage() {
-  const pairs = [[OLD_KEYS.inputs, STORAGE_INPUTS], [OLD_KEYS.current, STORAGE_CURRENT_PLAN], [OLD_KEYS.archive, STORAGE_ARCHIVE]];
+  const pairs = [[OLD_KEYS.inputs, STORAGE_INPUTS], [OLD_KEYS.current, STORAGE_CURRENT_PLAN], [OLD_KEYS.archive, STORAGE_ARCHIVE], [OLD_KEYS.quick, STORAGE_QUICK_MODE]];
   pairs.forEach(([oldKey, newKey]) => {
     if (!localStorage.getItem(newKey) && localStorage.getItem(oldKey)) {
       localStorage.setItem(newKey, localStorage.getItem(oldKey));
@@ -965,14 +1139,16 @@ function validateVideoLengthLater() {
 function renderShootOverlay(plan) {
   const overlay = $('#shootOverlay');
   if (!overlay) return;
-  const lightTip = timeNotes[plan.inputs.timeOfDay] || 'Use the best light available.';
+  const lightTip = timeNotes[plan.inputs.timeOfDay] || 'Use the cleanest available light.';
   overlay.innerHTML = `
     <div class="shoot-topbar">
-      <div><p class="kicker">Field checklist</p><h2>${escapeHtml(plan.script.hook)}</h2></div>
+      <div><p class="kicker">Field mode</p><h2>${escapeHtml(plan.script.hook)}</h2></div>
       <button class="ghost-btn shoot-close" type="button">× Close</button>
     </div>
     <div class="shoot-light">☀ ${escapeHtml(lightTip)}</div>
-    ${(plan.videoChecklist || []).length ? `<h3>Video shots</h3><div class="shoot-list">${plan.videoChecklist.map((item, index) => `<label class="shoot-line"><input type="checkbox"><span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.duration)}</strong><br>${escapeHtml(item.shot)}<br><em>Script cue: ${escapeHtml(plan.editTimeline?.[index]?.scriptLine || plan.script.hook)}</em></span></label>`).join('')}</div>` : ''}
+    <div class="shoot-rule"><strong>${escapeHtml(plan.iphoneSetup?.quickModeLine || 'Use your iPhone vertically. Keep it steady.')} </strong><br>${escapeHtml((plan.iphoneSetup?.mini || []).join(' · '))}</div>
+    <div class="shoot-rule"><strong>${escapeHtml(plan.shootCoach?.headline || 'Shoot only what you need, then stop.')}</strong><br>${escapeHtml(plan.shootCoach?.discipline || 'Every shot needs one job.')}</div>
+    ${(plan.shootCoach?.cards || []).length ? `<h3>iPhone shooting cards</h3><div class="shoot-list">${plan.shootCoach.cards.map((item, index) => `<label class="shoot-line coach-line"><input type="checkbox"><span><strong>${escapeHtml(item.number)}. ${escapeHtml(item.job)} · ${escapeHtml(item.seconds)}</strong><br><b>What:</b> ${escapeHtml(item.what)}<br><b>Phone:</b> vertical · ${escapeHtml(item.lens)}<br><b>Height:</b> ${escapeHtml(item.phoneHeight)}<br><b>Angle:</b> ${escapeHtml(item.angle)}<br><b>Texture:</b> ${escapeHtml(item.texture)}<br><em>Avoid: ${escapeHtml(item.avoid)}</em><br><em>Script cue: ${escapeHtml(plan.editTimeline?.[index]?.scriptLine || plan.script.hook)}</em></span></label>`).join('')}</div>` : ''}
     ${(plan.photoList || []).length ? `<h3>Photos</h3><div class="shoot-list">${plan.photoList.map((item, index) => `<label class="shoot-line"><input type="checkbox"><span>${escapeHtml(index + 1)}. ${escapeHtml(item)}</span></label>`).join('')}</div>` : ''}
   `;
   overlay.classList.remove('hidden');

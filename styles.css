@@ -207,3 +207,27 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent); box-shadow:0
 .shoot-topbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:14px;margin-bottom:14px}.shoot-topbar h2{color:#fff;margin:0}.shoot-close{background:#fff;color:#10233f}
 .shoot-light{background:#fff4ce;color:#5d4100;border-radius:16px;padding:12px 14px;font-weight:900;margin:12px 0 18px}.shoot-overlay h3{font-size:1.3rem;margin:20px 0 10px;color:#fff}.shoot-list{display:grid;gap:12px}.shoot-line{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px;color:#fff;font-weight:800;font-size:16px;line-height:1.5}.shoot-line input{width:28px;height:28px;min-width:28px;margin-top:2px;accent-color:#6bb7ff}.shoot-line strong{font-size:20px}.shoot-line em{display:inline-block;margin-top:6px;color:#dcecff;font-style:normal}.shoot-line.done{opacity:.6;text-decoration:line-through}.field-note{font-weight:700;color:var(--muted);font-size:.86rem}
 @media(max-width:760px){.mode-row{width:100%}.mode-btn{flex:1}.shoot-topbar{display:grid}.shoot-close{width:auto}.preset-wrap{margin-top:4px}}
+
+/* V2.1 iPhone Shoot Coach */
+.shoot-coach-card{background:linear-gradient(135deg,#f7fbff,#eef6ff);border-color:#cfe3ff}
+.strong-help{font-weight:900;color:var(--ink)}
+.coach-reminder{background:#fff4ce;color:#5d4100;border:1px solid #f0d678;border-radius:16px;padding:12px 14px;font-weight:900;margin:12px 0 16px;line-height:1.35}
+.coach-grid{display:grid;gap:12px;margin-top:14px}
+.coach-card{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.coach-card summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;cursor:pointer;font-weight:900;color:var(--ink);min-height:54px}
+.coach-card summary strong{background:var(--accent);color:#fff;border-radius:999px;padding:6px 10px;font-size:.82rem;white-space:nowrap}
+.coach-card p{padding:0 16px;margin:0 0 10px;line-height:1.45}.coach-card p:last-child{margin-bottom:16px}
+.avoid-line{color:#7a1e1e}.learn-line{color:var(--muted)}
+.shoot-rule{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:14px 16px;margin:0 0 16px;line-height:1.45;color:#fff}
+.coach-line b{color:#ffffff}.coach-line span{display:block}.coach-line em+em{margin-left:0;display:block}
+@media(max-width:760px){.coach-card summary{align-items:flex-start}.coach-card summary strong{margin-top:2px}.coach-card p{font-size:.94rem}}
+
+
+/* V2.2 iPhone settings coach */
+.iphone-setup-card{background:linear-gradient(135deg,#fbfdff,#f2f7ff);border-color:#d8e7ff}
+.mini-setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 18px 18px}
+.setup-box{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px}
+.setup-box h4{margin:0 0 10px;font-size:1rem;color:var(--ink)}
+.setup-box ul{margin:0;padding-left:18px;color:var(--muted);font-weight:700;line-height:1.5}
+.compact-reminder{margin:0 18px 18px}.compact-reminder span{display:inline-flex;background:#fff;border:1px solid rgba(93,65,0,.16);border-radius:999px;padding:5px 8px;margin:4px;font-size:.84rem}
+@media(max-width:760px){.mini-setup-grid{grid-template-columns:1fr}.setup-box{padding:12px}.compact-reminder{font-size:.92rem}}

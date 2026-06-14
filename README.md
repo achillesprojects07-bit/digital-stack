@@ -16,3 +16,10 @@ Blue Soulful Director build for GitHub Pages.
 
 ## Deploy
 Upload all files to your GitHub Pages repository root, commit, then hard refresh the app on your phone/browser.
+
+
+## V2.2 updates
+- Adds a collapsed iPhone 16 Pro Max setup card before Shoot Coach.
+- Includes fast pre-shoot checklist, video settings, photo settings, and before-every-shot reminders.
+- Keeps the settings card collapsed by default so it does not overwhelm the shooting workflow.
+- Updates cache name to content-compass-v2-2.
